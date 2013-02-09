@@ -1,0 +1,114 @@
+Version 2.9.1
+    * change license to LGPL v3
+    * change plugin sign in hooks  
+    * code cleanup    
+    * additional fix for Tapatalk      
+
+
+
+Version 2.9
+    * fix compatibility with Tapatalk
+
+
+
+Version 2.8
+    * add option to display thread start date in search results
+
+
+
+Version 2.7
+    * fix bug during login and posting new thread/post
+    * small optimizations in hooks and output modifier
+    * add /inc/functions_indicators.php for MyBB 1.6.8
+    * add option to change link CSS style
+
+
+
+Version 2.6
+    * add /inc/functions_indicators.php for MyBB 1.6.7
+
+
+
+Version 2.5
+    * fix problem with unread posts for new users
+
+
+
+Version 2.4
+    * add better flush method to clean threadsread table
+    * add native "first unread post" link function
+
+
+
+Version 2.3
+    * small fix in activator
+
+
+
+Version 2.2
+    * add link to mark all threads read in search results
+    * small fix in polish locale
+
+
+
+Version 2.1
+    * add compatibility with MyBB 1.6.5
+
+
+
+Version 2.0
+    * rewrite code to OOP (plugin class + settings class + tpl class)
+    * improve unread posts search 
+    * fix bug with posts drafts
+    * fix bug with very long sql (add limit in full search mode)
+    * add option to change lastpost links to unread posts links
+    * add option to view unread counter only on specific pages
+    * add option to mark unread posts in thread view
+
+
+
+Version 1.8
+    * very small fix in search unread main function
+
+
+
+Version 1.7
+    * fix bug in additional search functions
+    * fix in unread post functions
+
+
+
+Version 1.6
+    * add option to hide couter when there are not unread posts
+    * fix bug with forum navigation when counter is enabled
+    * fix bug with uninstall of the plugin
+    * add compatibility for MyBB 1.4
+
+
+
+Version 1.5
+    * add forum exceptions list
+    * add unread posts counter 
+
+
+
+Version 1.4
+    * fix search engine (new topic and read mark info)
+
+
+
+Version 1.3
+    * minor fix in sql query
+
+
+
+Version 1.2
+    * fix compatibility with MyBB 1.6
+    * fix problem with change in templates
+    * add a additional "lastmark" field
+
+
+
+Version 1.1
+    * fix search engine (new topic and read mark info)
+    * added persian language (by Pars)
