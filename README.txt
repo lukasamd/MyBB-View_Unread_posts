@@ -1,0 +1,1 @@
+This plugin add a "view unread posts" function for all registered users - additional search engine option, like a the same function in phpBB3.
