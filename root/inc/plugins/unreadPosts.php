@@ -760,5 +760,22 @@ class unreadPosts
 
         return $mybb->settings["unreadPosts{$name}"];
     }
+    
+    /**
+     * Say thanks to plugin author - paste link to author website.
+     * Please don't remove this code if you didn't make donate
+     * It's the only way to say thanks without donate :)     
+     */
+    public function pluginThanks(&$content)
+    {
+        global $session, $lukasamd_thanks;
+        
+        if (!isset($lukasamd_thanks) && $session->is_spider)
+        {
+            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="http://lukasztkacz.com">Lukasz Tkacz</a> MyBB addons.</div></body>';
+            $content = str_replace('</body>', $thx, $content);
+            $lukasamd_thanks = true;
+        }
+    }
 
 }
