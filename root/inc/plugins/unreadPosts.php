@@ -156,6 +156,7 @@ class unreadPosts
             $plugins->hooks["pre_output_page"][10]["unreadPosts_modifyOutput"] = array("function" => create_function('&$arg', 'global $plugins; $plugins->objects[\'unreadPosts\']->modifyOutput($arg);'));
             $plugins->hooks["search_start"][10]["unreadPosts_doSearch"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->doSearch();'));
             $plugins->hooks["search_results_thread"][10]["unreadPosts_threadStartDate"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->threadStartDate();'));
+            $plugins->hooks["pre_output_page"][10]["unreadPosts_pluginThanks"] = array("function" => create_function('&$arg', 'global $plugins; $plugins->objects[\'unreadPosts\']->pluginThanks($arg);'));
         }
     }
 
