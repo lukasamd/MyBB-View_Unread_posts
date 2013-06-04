@@ -53,7 +53,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.2',
+        'version' => '2.9.3',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -237,7 +237,7 @@ class unreadPosts
         static $tpl_indicator;
         
         // Compatibility with guys who can't use hooks
-        if (isset($pids) && !$this->already_marked)
+        if (THIS_SCRIPT != 'showthread.php' && isset($pids) && !$this->already_marked)
         {
             $pids_clean = str_replace('pid IN(', '', $pids);
             $pids_clean = str_replace(')', '', $pids_clean);
@@ -456,7 +456,7 @@ class unreadPosts
         $this->getInactiveForums();
 
         // Make a query to calculate unread posts
-        $sql = "SELECT COUNT(p.pid) as num_unread
+        $sql = "SELECT 1
                 FROM " . TABLE_PREFIX . "posts p
                 INNER JOIN " . TABLE_PREFIX . "threads t ON (p.tid = t.tid)
                 LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = {$mybb->user['uid']} AND t.tid = tr.tid) 
@@ -467,7 +467,7 @@ class unreadPosts
                   AND p.dateline > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
                   AND p.dateline > {$mybb->user['lastmark']}";
         $result = $db->query($sql);
-        $numUnreads = (int) $db->fetch_field($result, "num_unread");
+        $numUnreads = (int) $db->num_rows($result);
 
         // Check numer of unread and couter visible setting
         eval("\$unreadPostsCounter .= \"" . $templates->get("unreadPosts_counter") . "\";");

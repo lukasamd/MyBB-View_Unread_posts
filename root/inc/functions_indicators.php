@@ -25,7 +25,7 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
     if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed())
     {
         // For idiots who can't use hooks
-        if (THIS_SCRIPT != 'newreply.php' && THIS_SCRIPT != 'newthread.php')
+        if (THIS_SCRIPT != 'newreply.php' && THIS_SCRIPT != 'newthread.php' && THIS_SCRIPT != 'showthread.php')
         {
             $mark_time = TIME_NOW;
         }

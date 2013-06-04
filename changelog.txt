@@ -1,3 +1,8 @@
+Version 2.9.3
+    * performance fixes    
+
+
+
 Version 2.9.2
     * add compatibility with MyBB 1.6.10   
     * remove compatibility with MyBB below 1.6.10      
