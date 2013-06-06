@@ -446,14 +446,6 @@ class unreadPosts
             $content = str_replace('<!-- UNREADPOSTS_MARKALL -->', $mark_link, $content);
         }
 
-        // Counter is not enable, display standard link
-        if (!$this->getConfig('StatusCounter') || !$this->isPageCounterAllowed())
-        {
-            eval("\$unreadPosts .= \"" . $templates->get("unreadPosts_link") . "\";");
-            $content = str_replace('<!-- UNREADPOSTS_LINK -->', $unreadPosts, $content);
-            return;
-        }
-
         // Prepare sql statements
         $this->buildSQLWhere();
 
@@ -477,8 +469,23 @@ class unreadPosts
         {
             $numUnreads = ($numUnreads - 1) . '+';
         }
+        
+        // Hide link
+        if ($this->getConfig('StatusCounterHide') && $numUnreads == 0)
+        {
+            return;
+        }
 
-        // Check numer of unread and couter visible setting
+        // Link without counter
+        if (!$this->getConfig('StatusCounter') || !$this->isPageCounterAllowed())
+        {
+            
+            eval("\$unreadPosts .= \"" . $templates->get("unreadPosts_link") . "\";");
+            $content = str_replace('<!-- UNREADPOSTS_LINK -->', $unreadPosts, $content);
+            return;
+        }
+
+        // Link with counter
         eval("\$unreadPostsCounter .= \"" . $templates->get("unreadPosts_counter") . "\";");
         if ($numUnreads > 0 || $this->getConfig('StatusCounterHide') == 0)
         {
@@ -619,6 +626,12 @@ class unreadPosts
      */
     private function buildSQLLimit()
     {
+        if (!$this->getConfig('StatusCounter'))
+        {
+            $this->limit = 1;
+            return 1;        
+        }
+    
         $limit = (int) $this->getConfig('Limit');
         if (!$limit || $limit > 10000)
         {

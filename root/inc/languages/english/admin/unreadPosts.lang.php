@@ -39,7 +39,7 @@ $l['unreadPostsStatusCounterHide'] = 'Hide "view unread posts" link, when there 
 $l['unreadPostsStatusCounterHideDesc'] = 'This option hides url for searching unread posts, when there are not unread posts for user. Works only then "Unread posts counter" is enabled.';
 
 $l['unreadPostsLimit'] = 'Results limit for counter';
-$l['unreadPostsLimitDesc'] = 'Limit query results looking for unreads posts for the counter.<br /> The recommended value is 500 or less – more than 10000 will be automatically reduced to 500.<br /> If the search finds more results, it will display information like "500 +".<br /> <b>If you do not use the counter, set to 1 for maximum performance.</b>';
+$l['unreadPostsLimitDesc'] = 'Limit query results looking for unreads posts for the counter.<br /> The recommended value is 500 or less – more than 10000 will be automatically reduced to 500.<br /> If the search finds more results, it will display information like "500 +".';
 
 
 $l['unreadPostsCounterPages'] = 'Subpages with active unread posts counter posts';
