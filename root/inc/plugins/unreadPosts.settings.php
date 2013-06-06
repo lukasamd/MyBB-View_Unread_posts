@@ -98,6 +98,19 @@ class unreadPostsInstaller
             'gid' => $gid
         );
         $db->insert_query('settings', $setting);
+        
+        $setting = array(
+            'sid' => 'NULL',
+            'name' => 'unreadPostsLimit',
+            'title' => $db->escape_string($lang->unreadPostsLimit),
+            'description' => $db->escape_string($lang->unreadPostsLimitDesc),
+            'optionscode' => 'text',
+            'value' => '500',
+            'disporder' => $disporder++,
+            'gid' => $gid
+        );
+        $db->insert_query('settings', $setting);
+
 
         $setting = array(
             'sid' => 'NULL',

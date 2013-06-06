@@ -38,6 +38,9 @@ $l['unreadPostsStatusCounterDesc'] = 'Dodaje przy linku licznik nieprzeczytanych
 $l['unreadPostsStatusCounterHide'] = 'Ukrywanie linku gdy nie ma nieprzeczytanych';
 $l['unreadPostsStatusCounterHideDesc'] = 'Ta opcja powoduje ukrywanie linku do szukania nieprzeczytanych postów, gdy takowe nie istnieją. Działa tylko gdy włączono licznik nieprzeczytanych postów.';
 
+$l['unreadPostsLimit'] = 'Limit wyników dla licznika';
+$l['unreadPostsLimitDesc'] = 'Limit wyników zapytania szukającego nieprzeczytanych postów dla licznika.<br /> Zalecana wartość 500 lub mniej - powyżej 10000 będzie automatycznie ograniczane do 500.<br /> Jeżeli wyszukiwarka znajdzie więcej wyników, wyświetli w liczniku informację typu "500+".<br /> <b>Jeżeli nie korzystasz z licznika, ustaw na 1 dla największej wydajności.</b>';
+
 $l['unreadPostsCounterPages'] = 'Podstrony z aktywnym licznikiem nieczytanych postów';
 $l['unreadPostsCounterPagesDesc'] = 'Kody podstron (stała THIS_SCRIPT), na których licznik ma być aktywny. W wypadku braku zawartości licznik będzie aktywny na wszystkich stronach.';
 
