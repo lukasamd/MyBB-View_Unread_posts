@@ -460,9 +460,11 @@ class unreadPosts
                   AND p.dateline > IFNULL(tr.dateline,{$mybb->user['lastmark']}) 
                   AND p.dateline > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
                   AND p.dateline > {$mybb->user['lastmark']}
-                LIMIT " . $this->buildSQLLimit();
+                LIMIT " . $this->buildSQLLimit();     
         $result = $db->query($sql);
         $numUnreads = (int) $db->num_rows($result);
+        
+
         
         // Change counter
         if ($numUnreads > $this->limit)
@@ -606,9 +608,10 @@ class unreadPosts
         if (!function_exists('get_unsearchable_forums'))
         {
             require_once MYBB_ROOT."inc/functions_search.php";
-            if ($unsearchforums = get_unsearchable_forums())
+            $unsearchforums = get_unsearchable_forums();
+            if ($unsearchforums)
             {
-                $this->where .= " AND t.fid NOT IN ($unsearchable)";
+                $this->where .= " AND t.fid NOT IN ($unsearchforums)";
             }
         }
         
