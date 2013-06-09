@@ -53,7 +53,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.4',
+        'version' => '2.9.5',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -461,14 +461,12 @@ class unreadPosts
                   AND p.dateline > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
                   AND p.dateline > {$mybb->user['lastmark']}
                 LIMIT " . $this->buildSQLLimit();     
-        $result = $db->query($sql);
+        $result = $db->query($sql);     
         $numUnreads = (int) $db->num_rows($result);
-        
 
-        
         // Change counter
         if ($numUnreads > $this->limit)
-        {
+        {                        
             $numUnreads = ($numUnreads - 1) . '+';
         }
         
@@ -606,13 +604,19 @@ class unreadPosts
         
         // Unsearchable forums
         if (!function_exists('get_unsearchable_forums'))
-        {
-            require_once MYBB_ROOT."inc/functions_search.php";
+        {        
+            if (THIS_SCRIPT == 'index.php')
+            {
+                global $permissioncache;
+                $permissioncache = false;
+            } 
+         
+            require_once MYBB_ROOT."inc/functions_search.php";   
             $unsearchforums = get_unsearchable_forums();
             if ($unsearchforums)
-            {
+            {                              
                 $this->where .= " AND t.fid NOT IN ($unsearchforums)";
-            }
+            }   
         }
         
         // Inactive forums
@@ -621,7 +625,7 @@ class unreadPosts
         {
             $this->where .= " AND t.fid NOT IN ($inactiveforums)";
         }
-    }
+    }     
     
     /**
      * Prepare LIMIT for search query
