@@ -1,3 +1,9 @@
+Version 2.9.6
+    * Fix search page counter
+    * Template select optimize     
+
+
+
 Version 2.9.5
     * Permission fix
 

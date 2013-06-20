@@ -53,7 +53,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.5',
+        'version' => '2.9.6',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -100,6 +100,20 @@ function unreadPosts_deactivate()
 {
     require_once('unreadPosts.tpl.php');
     unreadPostsActivator::deactivate();
+}
+
+/*
+* Template optimize
+* 
+*/
+$templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter';
+if (THIS_SCRIPT == 'showthread.php')
+{
+ $templatelist .= ',unreadPosts_postbit'; 
+}
+if (THIS_SCRIPT == 'search.php')
+{
+ $templatelist .= ',unreadPosts_markAllReadLink,unreadPosts_threadStartDate'; 
 }
 
 /**
@@ -460,7 +474,7 @@ class unreadPosts
                   AND p.dateline > IFNULL(tr.dateline,{$mybb->user['lastmark']}) 
                   AND p.dateline > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
                   AND p.dateline > {$mybb->user['lastmark']}
-                LIMIT " . $this->buildSQLLimit();     
+                LIMIT " . $this->buildSQLLimit();          
         $result = $db->query($sql);     
         $numUnreads = (int) $db->num_rows($result);
 
@@ -604,20 +618,18 @@ class unreadPosts
         
         // Unsearchable forums
         if (!function_exists('get_unsearchable_forums'))
-        {        
-            if (THIS_SCRIPT == 'index.php')
-            {
-                global $permissioncache;
-                $permissioncache = false;
-            } 
-         
-            require_once MYBB_ROOT."inc/functions_search.php";   
-            $unsearchforums = get_unsearchable_forums();
-            if ($unsearchforums)
-            {                              
-                $this->where .= " AND t.fid NOT IN ($unsearchforums)";
-            }   
-        }
+        {   
+            require_once MYBB_ROOT."inc/functions_search.php";  
+        }    
+             
+        global $permissioncache, $unsearchableforums;
+        $permissioncache = $unsearchableforums = false;
+
+        $unsearchforums = get_unsearchable_forums();
+        if ($unsearchforums)
+        {                              
+            $this->where .= " AND t.fid NOT IN ($unsearchforums)";
+        } 
         
         // Inactive forums
         $inactiveforums = get_inactive_forums();
