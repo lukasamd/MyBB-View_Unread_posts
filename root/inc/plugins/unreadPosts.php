@@ -38,6 +38,7 @@ function unreadPosts_info()
 {
     global $lang;
 
+
     $lang->load("unreadPosts");
     
     $lang->unreadPostsDesc = '<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="float:right;">' .
@@ -53,7 +54,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.7',
+        'version' => '2.9.6',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -109,11 +110,11 @@ function unreadPosts_deactivate()
 $templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter';
 if (THIS_SCRIPT == 'showthread.php')
 {
- $templatelist .= ',unreadPosts_postbit'; 
+    $templatelist .= ',unreadPosts_postbit'; 
 }
 if (THIS_SCRIPT == 'search.php')
 {
- $templatelist .= ',unreadPosts_markAllReadLink,unreadPosts_threadStartDate'; 
+    $templatelist .= ',unreadPosts_markAllReadLink,unreadPosts_threadStartDate'; 
 }
 
 /**
@@ -126,7 +127,7 @@ class unreadPosts
     // SQL Where Statement
     private $where = '';
     
-    // Fid for FID mode
+    // SQL Where Statement
     private $fid = 0;
     
     // Thread read time
@@ -158,12 +159,18 @@ class unreadPosts
      */
     public function addHooks()
     {
-        global $mybb, $plugins;
+        global $db, $mybb, $plugins;
 
         // Enable fid mode?
-        if ($this->getConfig('unreadPostsFidMode'))
+        if ($this->getConfig('FidMode'))
         {
             $this->fid = (int) $mybb->input['fid'];
+            if (!$this->fid && $mybb->input['tid'])
+            {
+                $tid = (int) $mybb->input['tid'];
+                $result = $db->simple_select("threads", "fid", "tid='{$tid}'");
+                $this->fid = (int) $db->fetch_field($result, "fid");
+            }
         }
 
         $plugins->hooks["member_do_register_end"][10]["unreadPosts_updateLastmark"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->updateLastmark();'));
@@ -711,4 +718,4 @@ class unreadPosts
         }
     }
 
-}
+}  
