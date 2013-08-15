@@ -53,3 +53,7 @@ $l['unreadPostsMarkerStyleDesc'] = 'CSS style for unread posts marker in thread 
 
 $l['unreadPostsThreadStartDate'] = 'Show thread start date in search results';
 $l['unreadPostsThreadStartDateDesc'] = 'Display thread start date next to thread author in search results.';
+
+$l['unreadPostsFidMode'] = 'Forum (FID) counter / search mode';
+$l['unreadPostsFidModeDesc'] = 'After activation, counter and search will display informaction only about specific forum.';
+

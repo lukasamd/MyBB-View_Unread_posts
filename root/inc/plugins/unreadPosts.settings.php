@@ -171,6 +171,18 @@ class unreadPostsInstaller
             'gid' => $gid
         );
         $db->insert_query('settings', $setting);
+        
+        $setting = array(
+            'sid' => 'NULL',
+            'name' => 'unreadPostsFidMode',
+            'title' => $db->escape_string($lang->unreadPostsFidMode),
+            'description' => $db->escape_string($lang->unreadPostsFidModeDesc),
+            'optionscode' => 'onoff',
+            'value' => "0",
+            'disporder' => $disporder++,
+            'gid' => $gid
+        );
+        $db->insert_query('settings', $setting);
 
         // Add last mark field - time when user mark all forums read
         if (!$db->field_exists("lastmark", "users"))

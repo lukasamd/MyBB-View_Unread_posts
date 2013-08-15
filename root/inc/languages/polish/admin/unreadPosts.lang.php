@@ -52,3 +52,7 @@ $l['unreadPostsMarkerStyleDesc'] = 'Styl CSS oznaczenia dla nieprzeczytanych pos
 
 $l['unreadPostsThreadStartDate'] = 'Wyświetlanie czasu startu wątku';
 $l['unreadPostsThreadStartDateDesc'] = 'Wyświetla datę rozpoczęcia wątku w wynikach wyszukiwania obok informacji o autorze.';
+
+$l['unreadPostsFidMode'] = 'Tryb licznika / wyszukiwania dla działu';
+$l['unreadPostsFidModeDesc'] = 'Po aktywacji, licznik w działach będzie zliczał nieprzeczytane posty tylko z nich.';
+

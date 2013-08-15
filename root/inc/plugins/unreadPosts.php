@@ -53,7 +53,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.6',
+        'version' => '2.9.7',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -126,6 +126,9 @@ class unreadPosts
     // SQL Where Statement
     private $where = '';
     
+    // Fid for FID mode
+    private $fid = 0;
+    
     // Thread read time
     private $readTime = 0;
     
@@ -156,6 +159,12 @@ class unreadPosts
     public function addHooks()
     {
         global $mybb, $plugins;
+
+        // Enable fid mode?
+        if ($this->getConfig('unreadPostsFidMode'))
+        {
+            $this->fid = (int) $mybb->input['fid'];
+        }
 
         $plugins->hooks["member_do_register_end"][10]["unreadPosts_updateLastmark"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->updateLastmark();'));
         $plugins->hooks["misc_markread_end"][10]["unreadPostsupdateLastmark"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->updateLastmark();'));
@@ -506,6 +515,11 @@ class unreadPosts
             eval("\$unreadPosts .= \"" . $templates->get("unreadPosts_linkCounter") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_LINK -->', $unreadPosts, $content);
         }
+        
+        if ($this->fid)
+        {
+            $content = str_replace('?action=unreads', "?action=unreads&fid={$this->fid}", $content); 
+        }
     }
     
     /**
@@ -586,6 +600,12 @@ class unreadPosts
     
         // Standard where
         $this->where .= "t.visible = 1 AND t.closed NOT LIKE 'moved|%'";
+        
+        // Only one fid theme
+        if ($this->fid)
+        {
+            $this->where .= " AND t.fid = '{$this->fid}'";
+        }
     
         // Exceptions
         if ($this->getConfig('Exceptions') != '')

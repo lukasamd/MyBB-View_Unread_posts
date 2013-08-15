@@ -1,3 +1,8 @@
+Version 2.9.7
+    * Add forum (fid) mode     
+
+
+
 Version 2.9.6
     * Fix search page counter
     * Template select optimize     
