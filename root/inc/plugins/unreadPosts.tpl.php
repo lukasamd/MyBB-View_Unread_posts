@@ -95,6 +95,15 @@ class unreadPostsActivator
             "version" => "1.0",
             "dateline" => TIME_NOW,
         );
+        
+        self::$tpl[] = array(
+            "tid" => NULL,
+            "title" => 'unreadPosts_footerJS',
+            "template" => $db->escape_string('&raquo; {$thread[\'startdate_date\']} {$thread[\'startdate_time\']}'),
+            "sid" => "-1",
+            "version" => "1.0",
+            "dateline" => TIME_NOW,
+        ); 
     }
 
     public static function activate()
@@ -112,8 +121,11 @@ class unreadPostsActivator
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<td align="right" valign="top">{$multipage}') . '#', '<!-- UNREADPOSTS_MARKALL --><td align="right" valign="top">{$multipage}');
         find_replace_templatesets('search_results_threads', '#' . preg_quote('<td align="right" valign="top">{$multipage}') . '#', '<!-- UNREADPOSTS_MARKALL --><td align="right" valign="top">{$multipage}');
         find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('{$thread[\'profilelink\']}') . '#', '{$thread[\'profilelink\']}{$thread[\'startdate\']}');
+        find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('alt="{$folder_label}"') . '#', 'alt="{$folder_label}"{$thread[\'unreadPosts_thread\']}');
         
-        find_replace_templatesets('showthread', '#' . preg_quote('{$headerinclude}') . '#', '{$headerinclude}<!-- UNREADPOSTS_CSS -->');
+        
+        find_replace_templatesets('headerinclude', '#' . preg_quote('{$stylesheets}') . '#', '{$stylesheets}<!-- UNREADPOSTS_CSS -->');
+        find_replace_templatesets("footer", '#' . preg_quote('<!-- End task image code -->') . '#', "<!-- End task image code --><!-- UNREADPOSTS_JS -->");
     }
 
     public static function deactivate()
@@ -133,8 +145,10 @@ class unreadPostsActivator
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<!-- UNREADPOSTS_MARKALL -->') . '#', '');
         find_replace_templatesets('search_results_threads', '#' . preg_quote('<!-- UNREADPOSTS_MARKALL -->') . '#', '');
         find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('{$thread[\'startdate\']}') . '#', '');
+        find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('{$thread[\'unreadPosts_thread\']}') . '#', '');
         
-        find_replace_templatesets('showthread', '#' . preg_quote('<!-- UNREADPOSTS_CSS -->') . '#', '');
+        find_replace_templatesets('headerinclude', '#' . preg_quote('<!-- UNREADPOSTS_CSS -->') . '#', '');
+        find_replace_templatesets("footer", '#' . preg_quote('<!-- UNREADPOSTS_JS -->') . '#', '');
     }
     
 }

@@ -1,3 +1,8 @@
+Version 2.9.8
+    * Add option to mark threads read direct from search results (just click thread icon)     
+
+
+
 Version 2.9.7
     * Add forum (fid) mode     
 

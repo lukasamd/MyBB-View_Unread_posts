@@ -54,7 +54,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.6',
+        'version' => '2.9.8',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -151,6 +151,7 @@ class unreadPosts
         global $plugins;
 
         $plugins->hooks["global_start"][10]["unreadPosts_addHooks"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->addHooks();'));
+        $plugins->hooks["xmlhttp"][10]["unreadPosts_xmlhttpMarkThread"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->xmlhttpMarkThread();')); 
     }
     
     /**
@@ -190,7 +191,7 @@ class unreadPosts
             $plugins->hooks["global_end"][10]["unreadPosts_actionNewpost"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->actionNewpost();'));
             $plugins->hooks["pre_output_page"][10]["unreadPosts_modifyOutput"] = array("function" => create_function('&$arg', 'global $plugins; $plugins->objects[\'unreadPosts\']->modifyOutput($arg);'));
             $plugins->hooks["search_start"][10]["unreadPosts_doSearch"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->doSearch();'));
-            $plugins->hooks["search_results_thread"][10]["unreadPosts_threadStartDate"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->threadStartDate();'));
+            $plugins->hooks["search_results_thread"][10]["unreadPosts_modifySearchResultThread"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->modifySearchResultThread();'));
             $plugins->hooks["pre_output_page"][10]["unreadPosts_pluginThanks"] = array("function" => create_function('&$arg', 'global $plugins; $plugins->objects[\'unreadPosts\']->pluginThanks($arg);'));
         }
     }
@@ -260,6 +261,27 @@ class unreadPosts
             exit;
         }       
     }
+    
+    /**
+     * Action to mark thread read by xmlhttp
+     * 
+     */
+    public function xmlhttpMarkThread()
+    {
+        global $db, $mybb, $lang;
+
+        if (!$mybb->user['uid'] > 0 || $mybb->input['action'] != 'unreadPosts_markThread' || !isset($mybb->input['tid']))
+        {
+            return;
+        }
+        
+        $thread = get_thread($mybb->input['tid']);
+        if ($thread)
+        {
+            require_once MYBB_ROOT."inc/functions_indicators.php";
+            mark_thread_read($thread['tid'], $thread['fid'], TIME_NOW);
+        }
+    }  
 
     /**
      * Get post dateline and show indicator if enabled
@@ -437,12 +459,18 @@ class unreadPosts
      * Add thread start date to search results
      *      
      */
-    public function threadStartDate()
+    public function modifySearchResultThread()
     {
-        global $mybb, $thread, $templates;
-        
+        global $folder, $last_read, $mybb, $thread, $templates;
+
+        // Change class for xmlhttp
+        if($thread['lastpost'] > $last_read && $last_read)
+        {
+            $thread['unreadPosts_thread'] = " id=\"thread{$thread['tid']}\" class=\"thread_unread\"";
+        }
+
+        // Modify start date
         $thread['startdate'] = '';
-    
         if ($this->getConfig('ThreadStartDate'))
         {
             $thread['startdate_date'] = my_date($mybb->settings['dateformat'], $thread['dateline']);
@@ -462,9 +490,17 @@ class unreadPosts
         $lang->load("unreadPosts");
         
         // Post marker class
-        if (THIS_SCRIPT == 'showthread.php')
+        if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php')
         {
             $content = str_replace('<!-- UNREADPOSTS_CSS -->', $this->getCSSCode(), $content);
+        }
+        
+        // Search XMLHTTP
+        if (THIS_SCRIPT == 'search.php')
+        {
+            $code = "if (!window.jQuery) { document.write('<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js\"></script>'); }\n";
+            $code .= '<script type="text/javascript" src="jscripts/unreadPosts.js"></script>';
+            $content = str_replace('<!-- UNREADPOSTS_JS -->', $code, $content);
         }
 
         // Mark all threads read link in search results
@@ -562,6 +598,7 @@ class unreadPosts
             $css_code .= ".post_unread_marker {\n";
             $css_code .= $this->getConfig('MarkerStyle') . "\n";
             $css_code .= "}\n";
+            $css_code .= ".thread_unread { cursor: pointer; }\n";
             $css_code .= "</style>";
         } 
         
