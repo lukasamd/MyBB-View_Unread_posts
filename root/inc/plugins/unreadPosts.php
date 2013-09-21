@@ -54,7 +54,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.9.8',
+        'version' => '2.9.6',
         'guid' => '2817698896addbff5ef705626b7e1a36',
         'compatibility' => '1610'
     );
@@ -498,7 +498,7 @@ class unreadPosts
         // Search XMLHTTP
         if (THIS_SCRIPT == 'search.php')
         {
-            $code = "if (!window.jQuery) { document.write('<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js\"></script>'); }\n";
+            $code = "<script>window.jQuery || document.write('<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js\"><\/script>')</script>\n";
             $code .= '<script type="text/javascript" src="jscripts/unreadPosts.js"></script>';
             $content = str_replace('<!-- UNREADPOSTS_JS -->', $code, $content);
         }
