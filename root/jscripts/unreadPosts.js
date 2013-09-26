@@ -8,7 +8,7 @@ jQuery(document).ready(function()
         tid = tid.replace('thread', '');
         
         var src = jQuery(this).attr("src");
-        src = src.replace('newfolder', 'folder'); 
+        src = src.replace('new', ''); 
 
         jQuery.ajax({
             type: "POST",
