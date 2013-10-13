@@ -56,7 +56,7 @@ function unreadPosts_info()
         'authorsite' => 'http://lukasztkacz.com',
         'version' => '2.10',
         'guid' => 'bb2f50cc85c96e76af1a847fa6ce9020',
-        'compatibility' => '1610'
+        'compatibility' => '16*'
     );
 }
 
