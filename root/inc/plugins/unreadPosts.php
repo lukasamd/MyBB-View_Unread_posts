@@ -54,7 +54,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.10',
+        'version' => '2.11',
         'guid' => 'bb2f50cc85c96e76af1a847fa6ce9020',
         'compatibility' => '16*'
     );

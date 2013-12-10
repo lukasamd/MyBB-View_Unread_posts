@@ -1,3 +1,4 @@
+jQuery.noConflict();
 jQuery(document).ready(function()
 {   
     jQuery(".thread_unread").on('click', function() {
