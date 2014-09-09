@@ -54,9 +54,9 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '2.11',
-        'guid' => 'bb2f50cc85c96e76af1a847fa6ce9020',
-        'compatibility' => '16*'
+        'version' => '1.0.0',
+        'guid' => '',
+        'compatibility' => '18*'
     );
 }
 
@@ -493,14 +493,6 @@ class unreadPosts
         if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php')
         {
             $content = str_replace('<!-- UNREADPOSTS_CSS -->', $this->getCSSCode(), $content);
-        }
-        
-        // Search XMLHTTP
-        if (THIS_SCRIPT == 'search.php')
-        {
-            $code = "<script>window.jQuery || document.write('<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js\"><\/script>')</script>\n";
-            $code .= '<script type="text/javascript" src="jscripts/unreadPosts.js"></script>';
-            $content = str_replace('<!-- UNREADPOSTS_JS -->', $code, $content);
         }
 
         // Mark all threads read link in search results

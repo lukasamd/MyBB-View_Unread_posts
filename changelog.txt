@@ -1,3 +1,9 @@
+Version 1.0.0
+    * Initial build for MyBB 1.8
+    * Remove jQuery include code    
+
+
+
 Version 2.11
     * Fix jquery / prototype conflict
 

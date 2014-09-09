@@ -1,17 +1,16 @@
-jQuery.noConflict();
-jQuery(document).ready(function()
+$(document).ready(function()
 {   
-    jQuery(".thread_unread").on('click', function() {
+    $(".thread_unread").on('click', function() {
     
-        var element = jQuery(this);
+        var element = $(this);
     
-        var tid = jQuery(this).attr("id");
+        var tid = $(this).attr("id");
         tid = tid.replace('thread', '');
         
-        var src = jQuery(this).attr("src");
+        var src = $(this).attr("src");
         src = src.replace('new', ''); 
 
-        jQuery.ajax({
+        $.ajax({
             type: "POST",
             url: "xmlhttp.php",
             data: (

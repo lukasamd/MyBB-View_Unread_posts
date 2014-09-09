@@ -111,14 +111,22 @@ function fetch_unread_count($fid)
     {
         $comma = '';
         $tids = '';
-		$threadsread = my_unserialize($mybb->cookies['mybb']['threadread']);
-		$forumsread = my_unserialize($mybb->cookies['mybb']['forumread']);
+		$threadsread = $forumsread = array();
+
+		if(isset($mybb->cookies['mybb']['threadread']))
+		{
+			$threadsread = my_unserialize($mybb->cookies['mybb']['threadread']);
+		}
+		if(isset($mybb->cookies['mybb']['forumread']))
+		{
+			$forumsread = my_unserialize($mybb->cookies['mybb']['forumread']);
+		}
 
 		if(!empty($threadsread))
         {
             foreach ($threadsread as $key => $value)
             {
-                $tids .= $comma . intval($key);
+                $tids .= $comma.(int)$key;
                 $comma = ',';
             }
         }
@@ -128,11 +136,11 @@ function fetch_unread_count($fid)
             $count = 0;
 
             // We've read at least some threads, are they here?
-			$query = $db->simple_select("threads", "lastpost, tid, fid", "visible=1 AND closed NOT LIKE 'moved|%' AND fid IN ($fid) AND lastpost > '{$cutoff}'{$onlyview}", array("limit" => 100));
+            $query = $db->simple_select("threads", "lastpost, tid, fid", "visible=1 AND closed NOT LIKE 'moved|%' AND fid IN ({$fid}) AND lastpost > '{$cutoff}'{$onlyview}", array("limit" => 100));
 
             while ($thread = $db->fetch_array($query))
             {
-                if ($thread['lastpost'] > intval($threadsread[$thread['tid']]) && $thread['lastpost'] > intval($forumsread[$thread['fid']]))
+                if(isset($threadsread[$thread['tid']]) && $thread['lastpost'] > (int)$threadsread[$thread['tid']] && isset($forumsread[$thread['fid']]) && $thread['lastpost'] > (int)$forumsread[$thread['fid']])
                 {
                     ++$count;
                 }
@@ -383,4 +391,3 @@ function mark_all_forums_read()
 		my_unsetcookie("mybb[forumread]");
 	}
 }
-?>
