@@ -72,9 +72,16 @@ function unreadPosts_install()
 
 function unreadPosts_is_installed()
 {
-    global $mybb;
-
-    return (isset($mybb->settings['unreadPostsExceptions']));
+    global $mybb, $db;
+    
+    $result = $db->simple_select('settinggroups', '*', 'name=\'unreadPosts\'');
+    $group = $db->fetch_array($result);
+    if ($group === null || empty($group))
+    {
+        return false;
+    }
+      
+    return true;
 }
 
 function unreadPosts_uninstall()
@@ -462,7 +469,7 @@ class unreadPosts
         // Change class for xmlhttp
         if($thread['lastpost'] > $last_read && $last_read)
         {
-            $thread['unreadPosts_thread'] = " id=\"thread{$thread['tid']}\" class=\"thread_unread\"";
+            $thread['unreadPosts_thread'] = " thread_unread\" id=\"thread{$thread['tid']}\"";
         }
 
         // Modify start date
@@ -489,6 +496,13 @@ class unreadPosts
         if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php')
         {
             $content = str_replace('<!-- UNREADPOSTS_CSS -->', $this->getCSSCode(), $content);
+        }
+        
+        // Search XMLHTTP
+        if (THIS_SCRIPT == 'search.php')
+        {
+            $code = '<script type="text/javascript" src="jscripts/unreadPosts.js"></script>';
+            $content = str_replace('<!-- UNREADPOSTS_JS -->', $code, $content);
         }
 
         // Mark all threads read link in search results

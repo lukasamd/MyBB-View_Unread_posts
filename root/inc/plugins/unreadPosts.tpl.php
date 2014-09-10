@@ -121,10 +121,11 @@ class unreadPostsActivator
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<td align="right" valign="top">{$multipage}') . '#', '<!-- UNREADPOSTS_MARKALL --><td align="right" valign="top">{$multipage}');
         find_replace_templatesets('search_results_threads', '#' . preg_quote('<td align="right" valign="top">{$multipage}') . '#', '<!-- UNREADPOSTS_MARKALL --><td align="right" valign="top">{$multipage}');
         find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('{$thread[\'profilelink\']}') . '#', '{$thread[\'profilelink\']}{$thread[\'startdate\']}');
-        find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('alt="{$folder_label}"') . '#', 'alt="{$folder_label}"{$thread[\'unreadPosts_thread\']}');
+        find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('{$folder}"') . '#', '{$folder}{$thread[\'unreadPosts_thread\']}"');
         
         
         find_replace_templatesets('headerinclude', '#' . preg_quote('{$stylesheets}') . '#', '{$stylesheets}<!-- UNREADPOSTS_CSS -->');
+        find_replace_templatesets("footer", '#' . preg_quote('<!-- End task image code -->') . '#', "<!-- End task image code --><!-- UNREADPOSTS_JS -->");
     }
 
     public static function deactivate()
@@ -147,6 +148,7 @@ class unreadPostsActivator
         find_replace_templatesets('search_results_threads_thread', '#' . preg_quote('{$thread[\'unreadPosts_thread\']}') . '#', '');
         
         find_replace_templatesets('headerinclude', '#' . preg_quote('<!-- UNREADPOSTS_CSS -->') . '#', '');
+        find_replace_templatesets("footer", '#' . preg_quote('<!-- UNREADPOSTS_JS -->') . '#', '');
     }
     
 }

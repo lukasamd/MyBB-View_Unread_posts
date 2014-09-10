@@ -2,13 +2,11 @@ $(document).ready(function()
 {   
     $(".thread_unread").on('click', function() {
     
-        var element = $(this);
+        var element = jQuery(this);
     
         var tid = $(this).attr("id");
-        tid = tid.replace('thread', '');
-        
-        var src = $(this).attr("src");
-        src = src.replace('new', ''); 
+        tid = tid.replace('thread', ''); 
+        var classes = $(this).attr("class").replace("new", "");
 
         $.ajax({
             type: "POST",
@@ -19,7 +17,7 @@ $(document).ready(function()
                 action : 'unreadPosts_markThread',
             }),
             success: function() {
-                element.attr("src", src).removeClass('thread_unread');
+                element.removeClass().toggleClass(classes);
             }
         });
     }); 
