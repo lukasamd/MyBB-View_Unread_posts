@@ -68,8 +68,6 @@ function unreadPosts_install()
 {
     require_once('unreadPosts.settings.php');
     unreadPostsInstaller::install();
-
-    rebuildsettings();
 }
 
 function unreadPosts_is_installed()
@@ -83,8 +81,6 @@ function unreadPosts_uninstall()
 {
     require_once('unreadPosts.settings.php');
     unreadPostsInstaller::uninstall();
-
-    rebuildsettings();
 }
 
 /**
