@@ -1,3 +1,10 @@
+Version 1.0.1
+    * Fix javascript marker
+    * Fix settings  
+    * Fix templates    
+
+
+
 Version 1.0.0
     * Initial build for MyBB 1.8
     * Remove jQuery include code    
