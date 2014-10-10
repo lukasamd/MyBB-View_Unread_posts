@@ -24,7 +24,7 @@ $l['unreadPostsGroupDesc'] = 'Settings for plugin "View Unread Posts"';
 
 
 $l['unreadPostsExceptions'] = 'Exception forums list';
-$l['unreadPostsExceptionsDesc'] = 'Forums IDs which will not be searched, comma seprated';
+$l['unreadPostsExceptionsDesc'] = 'Forums which will not be searched.';
 
 $l['unreadPostsStatusActionUnread'] = 'Change lastpost to first unread post topic links';
 $l['unreadPostsStatusActionUnreadDesc'] = 'This option replaces all the links on the forum lead to the last post (action = lastpost) for links to first unread post in the thread.';

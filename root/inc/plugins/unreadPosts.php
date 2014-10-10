@@ -54,7 +54,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '1.0.1',
+        'version' => '1.0.2',
         'guid' => '',
         'compatibility' => '18*'
     );
@@ -72,16 +72,8 @@ function unreadPosts_install()
 
 function unreadPosts_is_installed()
 {
-    global $mybb, $db;
-    
-    $result = $db->simple_select('settinggroups', '*', 'name=\'unreadPosts\'');
-    $group = $db->fetch_array($result);
-    if ($group === null || empty($group))
-    {
-        return false;
-    }
-      
-    return true;
+    global $mybb;
+    return (isset($mybb->settings['unreadPostsExceptions']));
 }
 
 function unreadPosts_uninstall()
@@ -219,14 +211,14 @@ class unreadPosts
         // Visible for moderators
         $visibleonly = "AND visible='1'";
         $ismod = false;
-        if(is_moderator($thread['fid']))
+        if (is_moderator($thread['fid']))
         {
         	$visibleonly = " AND (visible='1' OR visible='0')";
             $ismod = true;
         }        
         
         // Make sure we are looking at a real thread here.
-        if(!$thread['tid'] || ($thread['visible'] == 0 && $ismod == false) || ($thread['visible'] > 1 && $ismod == true))
+        if (!$thread['tid'] || ($thread['visible'] == 0 && $ismod == false) || ($thread['visible'] > 1 && $ismod == true))
         {
         	error($lang->error_invalidthread);
         }        
@@ -246,13 +238,13 @@ class unreadPosts
         $query = $db->simple_select("posts", "pid", "tid='{$thread['tid']}' AND dateline > '{$this->readTime}' {$visibleonly}", $options);
         $newpost = $db->fetch_array($query);
         
-        if($newpost['pid'])
+        if ($newpost['pid'])
         {
         	$highlight = '';
-        	if($mybb->input['highlight'])
+        	if ($mybb->input['highlight'])
         	{
         		$string = "&";
-        		if($mybb->settings['seourls'] == "yes" || ($mybb->settings['seourls'] == "auto" && $_SERVER['SEO_SUPPORT'] == 1))
+        		if ($mybb->settings['seourls'] == "yes" || ($mybb->settings['seourls'] == "auto" && $_SERVER['SEO_SUPPORT'] == 1))
         		{
         			$string = "?";
         		}
@@ -467,7 +459,7 @@ class unreadPosts
         global $folder, $last_read, $mybb, $thread, $templates;
 
         // Change class for xmlhttp
-        if($thread['lastpost'] > $last_read && $last_read)
+        if ($thread['lastpost'] > $last_read && $last_read)
         {
             $thread['unreadPosts_thread'] = " thread_unread\" id=\"thread{$thread['tid']}\"";
         }
@@ -495,7 +487,9 @@ class unreadPosts
         // Post marker class
         if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php')
         {
-            $content = str_replace('<!-- UNREADPOSTS_CSS -->', $this->getCSSCode(), $content);
+            $css_code = '';
+            eval("\$css_code .= \"" . $templates->get("unreadPosts_threadCSSCode") . "\";");
+            $content = str_replace('<!-- UNREADPOSTS_CSS -->', $css_code, $content);
         }
         
         // Search XMLHTTP
@@ -588,26 +582,6 @@ class unreadPosts
     }
     
     /**
-     * Get CSS code for showthread
-     *      
-     */
-    private function getCSSCode()
-    {
-        $css_code = '';
-        if ($this->getConfig('MarkerStyle') != '')
-        {
-            $css_code = "<style>\n";
-            $css_code .= ".post_unread_marker {\n";
-            $css_code .= $this->getConfig('MarkerStyle') . "\n";
-            $css_code .= "}\n";
-            $css_code .= ".thread_unread { cursor: pointer; }\n";
-            $css_code .= "</style>";
-        } 
-        
-        return $css_code; 
-    }
-
-    /**
      * Helper function to decide if unread counter is allowed on current page
      * 
      * @return bool Is allowed or not allowed
@@ -652,17 +626,17 @@ class unreadPosts
         {
             $this->where .= " AND t.fid = '{$this->fid}'";
         }
-    
-        // Exceptions
-        if ($this->getConfig('Exceptions') != '')
+
+        if (!empty($this->getConfig('Exceptions')))
         {
-            $exceptions_list = explode(',', $this->getConfig('Exceptions'));
-            $exceptions_list = array_map('intval', $exceptions_list);
-    
-            if (sizeof($exceptions_list) > 0)
+            // All forums?
+            if ($this->getConfig('Exceptions') == '-1')
             {
-                $this->where .= " AND t.fid NOT IN (" . implode(',', $exceptions_list) . ")";
+                $this->where .= " AND 1 = 0";
+                return;    
             }
+
+            $this->where .= " AND t.fid NOT IN (" . $this->getConfig('Exceptions') . ")";
         }
 
         // Permissions

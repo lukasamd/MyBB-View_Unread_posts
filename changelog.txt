@@ -1,3 +1,12 @@
+Version 1.0.2
+    * Fix javascript marker
+    * Fix templates
+    * Remove marker style option 
+    * Add template with CSS     
+    * Change exceptions option to "forumselect"         
+
+
+
 Version 1.0.1
     * Fix javascript marker
     * Fix settings  

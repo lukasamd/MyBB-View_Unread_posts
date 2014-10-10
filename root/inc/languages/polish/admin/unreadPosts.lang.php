@@ -24,7 +24,7 @@ $l['unreadPostsGroupDesc'] = 'Ustawienia dotyczące modyfikacji "Nieprzeczytane 
 
 
 $l['unreadPostsExceptions'] = 'Wykluczone fora';
-$l['unreadPostsExceptionsDesc'] = 'ID forów oddzielone przecinkami, w których nie będą szukane nieprzeczytane posty.';
+$l['unreadPostsExceptionsDesc'] = 'Działy, w których nie będą szukane nieprzeczytane posty.';
 
 $l['unreadPostsStatusActionUnread'] = 'Zamiana linków do ostatniego na linki do nieczytanego postu';
 $l['unreadPostsStatusActionUnreadDesc'] = 'Zamienia wszystkie linki na forum prowadzące do ostatniego postu (action=lastpost) na linki prowadzące do pierwszego nieczytanego postu w temacie.';
@@ -46,9 +46,6 @@ $l['unreadPostsCounterPagesDesc'] = 'Kody podstron (stała THIS_SCRIPT), na któ
 
 $l['unreadPostsMarkAllReadLink'] = 'Wyświetlaj link "Oznacz wszystkie tematy jako przeczytane" w wynikach wyszukiwania';
 $l['unreadPostsMarkAllReadLinkDesc'] = 'Jeżeli włączono, nad listą wyników wyszukiwania będzie wyświatlany link pozwalający na oznaczenie wszystkich tematów jako przeczytane.';
-
-$l['unreadPostsMarkerStyle'] = 'Styl wyświetlania oznaczenia w widoku tematu';
-$l['unreadPostsMarkerStyleDesc'] = 'Styl CSS oznaczenia dla nieprzeczytanych postów w temacie.';
 
 $l['unreadPostsThreadStartDate'] = 'Wyświetlanie czasu startu wątku';
 $l['unreadPostsThreadStartDateDesc'] = 'Wyświetla datę rozpoczęcia wątku w wynikach wyszukiwania obok informacji o autorze.';

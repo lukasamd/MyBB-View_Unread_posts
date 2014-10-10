@@ -95,7 +95,19 @@ class unreadPostsActivator
             "version" => "1.0",
             "dateline" => TIME_NOW,
         );
-        
+
+        self::$tpl[] = array(
+            "tid" => NULL,
+            "title" => 'unreadPosts_threadCSSCode',
+            "template" => $db->escape_string('<style>
+.post_unread_marker { color:red; font-weight:bold; }
+.thread_unread { cursor: pointer; }
+</style>'),
+            "sid" => "-1",
+            "version" => "1.0",
+            "dateline" => TIME_NOW,
+        );
+ 
         self::$tpl[] = array(
             "tid" => NULL,
             "title" => 'unreadPosts_footerJS',

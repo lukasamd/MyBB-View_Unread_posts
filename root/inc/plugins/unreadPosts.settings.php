@@ -56,7 +56,7 @@ class unreadPostsInstaller
             'name' => 'unreadPostsExceptions',
             'title' => $db->escape_string($lang->unreadPostsExceptions),
             'description' => $db->escape_string($lang->unreadPostsExceptionsDesc),
-            'optionscode' => 'text',
+            'optionscode' => 'forumselect',
             'value' => '',
             'disporder' => $disporder++,
             'gid' => $gid
@@ -150,18 +150,6 @@ class unreadPostsInstaller
         
         $setting = array(
             'sid' => 'NULL',
-            'name' => 'unreadPostsMarkerStyle',
-            'title' => $db->escape_string($lang->unreadPostsMarkerStyle),
-            'description' => $db->escape_string($lang->unreadPostsMarkerStyleDesc),
-            'optionscode' => 'textarea',
-            'value' => "color:red;\nfont-weight:bold;",
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-        
-        $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsThreadStartDate',
             'title' => $db->escape_string($lang->unreadPostsThreadStartDate),
             'description' => $db->escape_string($lang->unreadPostsThreadStartDateDesc),
@@ -192,6 +180,8 @@ class unreadPostsInstaller
 
         $db->update_query("users", array("lastmark" => "regdate"), '', '', true);
         $db->update_query("settings", array("value" => "365"), "name = 'threadreadcut'");
+        
+        rebuild_settings();
     }
 
     public static function uninstall()
@@ -206,6 +196,8 @@ class unreadPostsInstaller
             $db->delete_query('settings', "gid = '{$gid}'");
         }
         $db->delete_query('settinggroups', "gid = '{$gid}'");
+        
+        rebuild_settings();
     }
 
 }
