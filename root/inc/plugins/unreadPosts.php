@@ -54,7 +54,7 @@ function unreadPosts_info()
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'http://lukasztkacz.com',
-        'version' => '1.0.2',
+        'version' => '1.0.3',
         'guid' => '',
         'compatibility' => '18*'
     );
@@ -627,16 +627,17 @@ class unreadPosts
             $this->where .= " AND t.fid = '{$this->fid}'";
         }
 
-        if (!empty($this->getConfig('Exceptions')))
+        $exceptions = $this->getConfig('Exceptions');
+        if (!empty($exceptions))
         {
             // All forums?
-            if ($this->getConfig('Exceptions') == '-1')
+            if ($exceptions == '-1')
             {
                 $this->where .= " AND 1 = 0";
                 return;    
             }
 
-            $this->where .= " AND t.fid NOT IN (" . $this->getConfig('Exceptions') . ")";
+            $this->where .= " AND t.fid NOT IN (" . $exceptions . ")";
         }
 
         // Permissions

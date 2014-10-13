@@ -1,3 +1,8 @@
+Version 1.0.3
+    * Fix Exceptions error     
+
+
+
 Version 1.0.2
     * Fix javascript marker
     * Fix templates
