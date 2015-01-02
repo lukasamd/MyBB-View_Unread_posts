@@ -110,6 +110,18 @@ class unreadPostsInstaller
             'gid' => $gid
         );
         $db->insert_query('settings', $setting);
+        
+        $setting = array(
+            'sid' => 'NULL',
+            'name' => 'unreadPostsStatusMoved',
+            'title' => $db->escape_string($lang->unreadPostsStatusMoved),
+            'description' => $db->escape_string($lang->unreadPostsStatusMovedDesc),
+            'optionscode' => 'onoff',
+            'value' => '0',
+            'disporder' => $disporder++,
+            'gid' => $gid
+        );
+        $db->insert_query('settings', $setting);
 
 
         $setting = array(

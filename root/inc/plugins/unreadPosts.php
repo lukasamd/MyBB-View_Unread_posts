@@ -53,10 +53,11 @@ function unreadPosts_info()
         'description' => $lang->unreadPostsDesc,
         'website' => 'http://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
-        'authorsite' => 'http://lukasztkacz.com',
-        'version' => '1.0.3',
+        'authorsite' => 'https://tkacz.it',
+        'version' => '1.1.0',
         'guid' => '',
-        'compatibility' => '18*'
+        'compatibility' => '18*',
+        'codename' => 'view_unread_posts',
     );
 }
 
@@ -102,6 +103,7 @@ function unreadPosts_deactivate()
 * Template optimize
 * 
 */
+global $templatelist;
 $templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter';
 if (THIS_SCRIPT == 'showthread.php')
 {
@@ -619,7 +621,13 @@ class unreadPosts
         }        
     
         // Standard where
-        $this->where .= "t.visible = 1 AND t.closed NOT LIKE 'moved|%'";
+        $this->where .= "t.visible = 1'";
+        
+        // Search not moved
+        if (!$this->getConfig('StatusMoved'))
+        {
+            $this->where .= "AND t.closed NOT LIKE 'moved|%"; 
+        }
         
         // Only one fid theme
         if ($this->fid)
@@ -726,7 +734,7 @@ class unreadPosts
         
         if (!isset($lukasamd_thanks) && $session->is_spider)
         {
-            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="http://lukasztkacz.com">Lukasz Tkacz</a> MyBB addons.</div></body>';
+            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="https://tkacz.it">Lukasz Tkacz</a> MyBB addons.</div></body>';
             $content = str_replace('</body>', $thx, $content);
             $lukasamd_thanks = true;
         }
