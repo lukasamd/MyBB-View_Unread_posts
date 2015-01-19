@@ -51,10 +51,10 @@ function unreadPosts_info()
     return Array(
         'name' => $lang->unreadPostsName,
         'description' => $lang->unreadPostsDesc,
-        'website' => 'http://lukasztkacz.com',
+        'website' => 'https://tkacz.it',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.it',
-        'version' => '1.1.0',
+        'version' => '1.2.0',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -621,12 +621,12 @@ class unreadPosts
         }        
     
         // Standard where
-        $this->where .= "t.visible = 1'";
+        $this->where .= "t.visible = 1";
         
         // Search not moved
         if (!$this->getConfig('StatusMoved'))
         {
-            $this->where .= "AND t.closed NOT LIKE 'moved|%"; 
+            $this->where .= " AND t.closed NOT LIKE 'moved|%'"; 
         }
         
         // Only one fid theme
