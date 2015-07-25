@@ -81,7 +81,7 @@ class unreadPostsActivator
             "tid" => NULL,
             "title" => 'unreadPosts_markAllReadLink',
             "template" => $db->escape_string('
-<td align="left" valign="top"><a href="misc.php?action=markread{$post_code_string}" "class="smalltext">{$lang->unreadPostsMarkAllRead}</a></td>'),
+<td align="left" valign="top"><a href="misc.php?action=markread{$post_code_string}" class="smalltext">{$lang->unreadPostsMarkAllRead}</a></td>'),
             "sid" => "-1",
             "version" => "1.0",
             "dateline" => TIME_NOW,
