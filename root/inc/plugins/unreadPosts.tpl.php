@@ -47,7 +47,7 @@ class unreadPostsActivator {
         self::$tpl[] = array(
             "tid" => NULL,
             "title" => 'unreadPosts_linkCounter',
-            "template" => $db->escape_string('<li><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink} {$unreadPostsCounter}</a><li>'),
+            "template" => $db->escape_string('<li><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink} {$unreadPostsCounter}</a></li>'),
             "sid" => "-1",
             "version" => "1.0",
             "dateline" => TIME_NOW,
