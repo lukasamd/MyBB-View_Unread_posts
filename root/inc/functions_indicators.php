@@ -11,8 +11,8 @@
 /**
  * Mark a particular thread as read for the current user.
  *
- * @param int The thread ID
- * @param int The forum ID of the thread
+ * @param int $tid The thread ID
+ * @param int $fid The forum ID of the thread
  */
 function mark_thread_read($tid, $fid, $mark_time = 0)
 {

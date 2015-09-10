@@ -1,3 +1,11 @@
+Version 1.4.0
+    * Fix header template (add li element)
+    * Fix moved SQL exception
+    * Updated functions_indicators.php
+    * Small code changes
+
+
+
 Version 1.3.0
     * Small template fix
 

@@ -34,8 +34,7 @@ $plugins->objects['unreadPosts'] = new unreadPosts();
  * Standard MyBB info function
  * 
  */
-function unreadPosts_info()
-{
+function unreadPosts_info() {
     global $lang;
 
 
@@ -51,10 +50,10 @@ function unreadPosts_info()
     return Array(
         'name' => $lang->unreadPostsName,
         'description' => $lang->unreadPostsDesc,
-        'website' => 'https://tkacz.it',
+        'website' => 'https://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
-        'authorsite' => 'https://tkacz.it',
-        'version' => '1.3.0',
+        'authorsite' => 'https://lukasztkacz.com',
+        'version' => '1.4.0',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -65,20 +64,17 @@ function unreadPosts_info()
  * Standard MyBB installation functions 
  * 
  */
-function unreadPosts_install()
-{
+function unreadPosts_install() {
     require_once('unreadPosts.settings.php');
     unreadPostsInstaller::install();
 }
 
-function unreadPosts_is_installed()
-{
+function unreadPosts_is_installed() {
     global $mybb;
     return (isset($mybb->settings['unreadPostsExceptions']));
 }
 
-function unreadPosts_uninstall()
-{
+function unreadPosts_uninstall() {
     require_once('unreadPosts.settings.php');
     unreadPostsInstaller::uninstall();
 }
@@ -87,14 +83,12 @@ function unreadPosts_uninstall()
  * Standard MyBB activation functions 
  * 
  */
-function unreadPosts_activate()
-{
+function unreadPosts_activate() {
     require_once('unreadPosts.tpl.php');
     unreadPostsActivator::activate();
 }
 
-function unreadPosts_deactivate()
-{
+function unreadPosts_deactivate() {
     require_once('unreadPosts.tpl.php');
     unreadPostsActivator::deactivate();
 }
@@ -105,12 +99,10 @@ function unreadPosts_deactivate()
 */
 global $templatelist;
 $templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter';
-if (THIS_SCRIPT == 'showthread.php')
-{
+if (THIS_SCRIPT == 'showthread.php') {
     $templatelist .= ',unreadPosts_postbit'; 
 }
-if (THIS_SCRIPT == 'search.php')
-{
+if (THIS_SCRIPT == 'search.php') {
     $templatelist .= ',unreadPosts_markAllReadLink,unreadPosts_threadStartDate'; 
 }
 
@@ -118,9 +110,7 @@ if (THIS_SCRIPT == 'search.php')
  * Plugin Class 
  * 
  */
-class unreadPosts
-{
-
+class unreadPosts {
     // SQL Where Statement
     private $where = '';
     
@@ -143,8 +133,7 @@ class unreadPosts
      * Constructor - add plugin hooks
      *      
      */
-    public function __construct()
-    {
+    public function __construct() {
         global $plugins;
 
         $plugins->hooks["global_start"][10]["unreadPosts_addHooks"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->addHooks();'));
@@ -155,16 +144,13 @@ class unreadPosts
      * Add all needed hooks
      *      
      */
-    public function addHooks()
-    {
+    public function addHooks() {
         global $db, $mybb, $plugins;
 
         // Enable fid mode?
-        if ($this->getConfig('FidMode'))
-        {
+        if ($this->getConfig('FidMode')) {
             $this->fid = (int) $mybb->input['fid'];
-            if (!$this->fid && $mybb->input['tid'])
-            {
+            if (!$this->fid && $mybb->input['tid']) {
                 $tid = (int) $mybb->input['tid'];
                 $result = $db->simple_select("threads", "fid", "tid='{$tid}'");
                 $this->fid = (int) $db->fetch_field($result, "fid");
@@ -174,8 +160,7 @@ class unreadPosts
         $plugins->hooks["member_do_register_end"][10]["unreadPosts_updateLastmark"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->updateLastmark();'));
         $plugins->hooks["misc_markread_end"][10]["unreadPostsupdateLastmark"] = array("function" => create_function('', 'global $plugins; $plugins->objects[\'unreadPosts\']->updateLastmark();'));
         
-        if ($mybb->user['uid'] > 0)
-        {
+        if ($mybb->user['uid'] > 0) {
             $mybb->user['lastmark'] = (int) $mybb->user['lastmark'];
             
             $plugins->hooks["postbit"][10]["unreadPosts_analyzePostbit"] = array("function" => create_function('&$arg', 'global $plugins; $plugins->objects[\'unreadPosts\']->analyzePostbit($arg);'));
@@ -197,13 +182,11 @@ class unreadPosts
      * Redirect to first unread post in topic
      *      
      */
-    public function actionNewpost()
-    {
+    public function actionNewpost() {
         global $db, $lang, $mybb, $thread;
 
         // Change action for guests or mode 0
-        if (!$this->getConfig('StatusActionUnread') || !isset($mybb->input['tid']) || THIS_SCRIPT != 'showthread.php' || $mybb->input['action'] != 'lastpost')
-        {
+        if (!$this->getConfig('StatusActionUnread') || !isset($mybb->input['tid']) || THIS_SCRIPT != 'showthread.php' || $mybb->input['action'] != 'lastpost') {
             return;
         }
 
@@ -213,15 +196,13 @@ class unreadPosts
         // Visible for moderators
         $visibleonly = "AND visible='1'";
         $ismod = false;
-        if (is_moderator($thread['fid']))
-        {
+        if (is_moderator($thread['fid'])) {
         	$visibleonly = " AND (visible='1' OR visible='0')";
             $ismod = true;
         }        
         
         // Make sure we are looking at a real thread here.
-        if (!$thread['tid'] || ($thread['visible'] == 0 && $ismod == false) || ($thread['visible'] > 1 && $ismod == true))
-        {
+        if (!$thread['tid'] || ($thread['visible'] == 0 && $ismod == false) || ($thread['visible'] > 1 && $ismod == true)) {
         	error($lang->error_invalidthread);
         }        
         
@@ -240,14 +221,11 @@ class unreadPosts
         $query = $db->simple_select("posts", "pid", "tid='{$thread['tid']}' AND dateline > '{$this->readTime}' {$visibleonly}", $options);
         $newpost = $db->fetch_array($query);
         
-        if ($newpost['pid'])
-        {
+        if ($newpost['pid']) {
         	$highlight = '';
-        	if ($mybb->input['highlight'])
-        	{
+        	if ($mybb->input['highlight']) {
         		$string = "&";
-        		if ($mybb->settings['seourls'] == "yes" || ($mybb->settings['seourls'] == "auto" && $_SERVER['SEO_SUPPORT'] == 1))
-        		{
+        		if ($mybb->settings['seourls'] == "yes" || ($mybb->settings['seourls'] == "auto" && $_SERVER['SEO_SUPPORT'] == 1)) {
         			$string = "?";
         		}
         
@@ -263,18 +241,15 @@ class unreadPosts
      * Action to mark thread read by xmlhttp
      * 
      */
-    public function xmlhttpMarkThread()
-    {
+    public function xmlhttpMarkThread() {
         global $db, $mybb, $lang;
 
-        if (!$mybb->user['uid'] > 0 || $mybb->input['action'] != 'unreadPosts_markThread' || !isset($mybb->input['tid']))
-        {
+        if (!$mybb->user['uid'] > 0 || $mybb->input['action'] != 'unreadPosts_markThread' || !isset($mybb->input['tid'])) {
             return;
         }
         
         $thread = get_thread($mybb->input['tid']);
-        if ($thread)
-        {
+        if ($thread) {
             require_once MYBB_ROOT."inc/functions_indicators.php";
             mark_thread_read($thread['tid'], $thread['fid'], TIME_NOW);
         }
@@ -286,14 +261,12 @@ class unreadPosts
      * @param array $post Actual post data
      * @return array Updated post data
      */
-    public function analyzePostbit(&$post)
-    {
+    public function analyzePostbit(&$post) {
         global $db, $lang, $mybb, $templates, $pids;
         static $tpl_indicator;
         
         // Compatibility with guys who can't use hooks
-        if (THIS_SCRIPT != 'showthread.php' && isset($pids) && !$this->already_marked)
-        {
+        if (THIS_SCRIPT != 'showthread.php' && isset($pids) && !$this->already_marked) {
             $pids_clean = str_replace('pid IN(', '', $pids);
             $pids_clean = str_replace(')', '', $pids_clean);
             $pids_clean = str_replace("'", '', $pids_clean);
@@ -301,31 +274,26 @@ class unreadPosts
             $pids_clean = array_map('intval', $pids_clean);
             $pid = max($pids_clean);
             
-    		if ($post_row = get_post($pid))
-            {
+    		if ($post_row = get_post($pid)) {
                 mark_thread_read($post_row['tid'], $post_row['fid'], $post_row['dateline']);
                 $this->already_marked = true;
             }
         }
 
         // Save last seen post id
-        if ($post['dateline'] > $this->lastPostTime)
-        {
+        if ($post['dateline'] > $this->lastPostTime) {
             $this->lastPostTime = $post['dateline'];
         }
         
         // Is marker enabled?
-        if (!$this->getConfig('StatusPostbitMark'))
-        {
+        if (!$this->getConfig('StatusPostbitMark')) {
             return;
         }
 
         // Generate indicator for template
         $post['is_unread'] = '';
-        if ($this->readTime < $post['dateline'])
-        {
-            if (empty($tpl_indicator))
-            {
+        if ($this->readTime < $post['dateline']) {
+            if (empty($tpl_indicator)) {
                 eval("\$tpl_indicator .= \"" . $templates->get("unreadPosts_postbit") . "\";");
             }
 
@@ -337,12 +305,10 @@ class unreadPosts
      * Compare last post time with thread read time and update its.
      *      
      */
-    public function markShowthreadLinear()
-    {
+    public function markShowthreadLinear() {
         global $fid, $mybb, $tid;
 
-        if ($this->lastPostTime > $this->readTime)
-        {
+        if ($this->lastPostTime > $this->readTime) {
             mark_thread_read($tid, $fid, $this->lastPostTime);
             $this->already_marked = true;
         }
@@ -352,12 +318,10 @@ class unreadPosts
      * Insert plugin read data for new reply / new thread action.
      *      
      */
-    public function newThreadOrReplyMark()
-    {
+    public function newThreadOrReplyMark() {
         global $fid, $tid;
         
-        if (isset($fid) && isset($tid))
-        {
+        if (isset($fid) && isset($tid)) {
             $this->readTime = TIME_NOW;
             mark_thread_read($tid, $fid, TIME_NOW);
             $this->already_marked = true;
@@ -368,18 +332,15 @@ class unreadPosts
      * Update user lastmark field after mark all forums read and registration.
      *      
      */
-    public function updateLastmark()
-    {
+    public function updateLastmark() {
         global $db, $mybb, $user_info;
 
         // For new members
-        if (isset($user_info['uid']))
-        {
+        if (isset($user_info['uid'])) {
             $db->update_query("users", array('lastmark' => TIME_NOW), "uid = '{$user_info['uid']}'");
         }
         // For already logged in
-        else
-        {
+        else {
             $db->update_query("users", array('lastmark' => TIME_NOW), "uid = '{$mybb->user['uid']}'");
             
             // Delete old read data
@@ -392,12 +353,10 @@ class unreadPosts
      * Search for threads ids with unreads posts
      *      
      */
-    public function doSearch()
-    {
+    public function doSearch() {
         global $db, $lang, $mybb, $plugins;
 
-        if (!isset($mybb->input['action']) || $mybb->input['action'] != 'unreads')
-        {
+        if (!isset($mybb->input['action']) || $mybb->input['action'] != 'unreads') {
             return;
         }
 
@@ -418,18 +377,15 @@ class unreadPosts
         $result = $db->query($sql);
 
         // Build a unread topics list 
-        while ($row = $db->fetch_array($result))
-        {
+        while ($row = $db->fetch_array($result)) {
             $tids[] = $row['tid'];
         }
 
         // Decide and make a where statement
-        if (sizeof($tids) > 0)
-        {
+        if (sizeof($tids) > 0) {
             $this->where = 't.tid IN (' . implode(',', $tids) . ')';
         }
-        else
-        {
+        else {
             $this->where = '1 < 0';
         }
 
@@ -456,20 +412,17 @@ class unreadPosts
      * Add thread start date to search results
      *      
      */
-    public function modifySearchResultThread()
-    {
+    public function modifySearchResultThread() {
         global $folder, $last_read, $mybb, $thread, $templates;
 
         // Change class for xmlhttp
-        if ($thread['lastpost'] > $last_read && $last_read)
-        {
+        if ($thread['lastpost'] > $last_read && $last_read) {
             $thread['unreadPosts_thread'] = " thread_unread\" id=\"thread{$thread['tid']}\"";
         }
 
         // Modify start date
         $thread['startdate'] = '';
-        if ($this->getConfig('ThreadStartDate'))
-        {
+        if ($this->getConfig('ThreadStartDate')) {
             $thread['startdate_date'] = my_date($mybb->settings['dateformat'], $thread['dateline']);
             $thread['startdate_time'] = my_date($mybb->settings['timeformat'], $thread['dateline']);
             
@@ -479,32 +432,29 @@ class unreadPosts
 
     /**
      * Change links action from lastpost to unread and display link to search unreads
-     *      
+     *  
+     * @param strong $content Page content
      */
-    public function modifyOutput(&$content)
-    {
+    public function modifyOutput(&$content) {
         global $db, $lang, $mybb, $postcount, $templates, $threadcount;
         $lang->load("unreadPosts");
         
         // Post marker class
-        if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php')
-        {
+        if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php') {
             $css_code = '';
             eval("\$css_code .= \"" . $templates->get("unreadPosts_threadCSSCode") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_CSS -->', $css_code, $content);
         }
         
         // Search XMLHTTP
-        if (THIS_SCRIPT == 'search.php')
-        {
+        if (THIS_SCRIPT == 'search.php') {
             $code = '<script type="text/javascript" src="jscripts/unreadPosts.js"></script>';
             $content = str_replace('<!-- UNREADPOSTS_JS -->', $code, $content);
         }
 
         // Mark all threads read link in search results
         if ($this->getConfig('MarkAllReadLink') && THIS_SCRIPT == 'search.php'
-                && ($postcount > 0 || $threadcount > 0))
-        {
+                && ($postcount > 0 || $threadcount > 0)) {
             $post_code_string = "&amp;my_post_key={$mybb->post_code}";
             eval("\$mark_link .= \"" . $templates->get("unreadPosts_markAllReadLink") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_MARKALL -->', $mark_link, $content);
@@ -529,21 +479,17 @@ class unreadPosts
         $numUnreads = (int) $db->num_rows($result);
 
         // Change counter
-        if ($numUnreads > $this->limit)
-        {                        
+        if ($numUnreads > $this->limit) {                        
             $numUnreads = ($numUnreads - 1) . '+';
         }
         
         // Hide link
-        if ($this->getConfig('StatusCounterHide') && $numUnreads == 0)
-        {
+        if ($this->getConfig('StatusCounterHide') && $numUnreads == 0) {
             return;
         }
 
         // Link without counter
-        if (!$this->getConfig('StatusCounter') || !$this->isPageCounterAllowed())
-        {
-            
+        if (!$this->getConfig('StatusCounter') || !$this->isPageCounterAllowed()) {
             eval("\$unreadPosts .= \"" . $templates->get("unreadPosts_link") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_LINK -->', $unreadPosts, $content);
             return;
@@ -551,14 +497,12 @@ class unreadPosts
 
         // Link with counter
         eval("\$unreadPostsCounter .= \"" . $templates->get("unreadPosts_counter") . "\";");
-        if ($numUnreads > 0 || $this->getConfig('StatusCounterHide') == 0)
-        {
+        if ($numUnreads > 0 || $this->getConfig('StatusCounterHide') == 0) {
             eval("\$unreadPosts .= \"" . $templates->get("unreadPosts_linkCounter") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_LINK -->', $unreadPosts, $content);
         }
         
-        if ($this->fid)
-        {
+        if ($this->fid) {
             $content = str_replace('?action=unreads', "?action=unreads&fid={$this->fid}", $content); 
         }
     }
@@ -567,8 +511,7 @@ class unreadPosts
      * Get actual thread read plugin data
      *      
      */
-    public function getReadTime()
-    {
+    public function getReadTime() {
         global $db, $fid, $lang, $mybb, $thread;
 
         // Load lang file to showthread
@@ -588,24 +531,19 @@ class unreadPosts
      * 
      * @return bool Is allowed or not allowed
      */
-    private function isPageCounterAllowed()
-    {
+    private function isPageCounterAllowed() {
         $allowedPages = explode("\n", $this->getConfig('CounterPages'));
         $allowedPages = array_map("trim", $allowedPages);
-        for ($i = 0; $i < sizeof($allowedPages); $i++)
-        {
-            if ($allowedPages[$i] == '')
-            {
+        for ($i = 0; $i < sizeof($allowedPages); $i++) {
+            if ($allowedPages[$i] == '') {
                 unset($allowedPages[$i]);
             }
         }
         shuffle($allowedPages);
 
-        if (empty($allowedPages) || in_array(THIS_SCRIPT, $allowedPages))
-        {
+        if (empty($allowedPages) || in_array(THIS_SCRIPT, $allowedPages)) {
             return true;
         }
-
         return false;
     }
     
@@ -613,10 +551,8 @@ class unreadPosts
      * Prepare WHERE statement for unread posts search query
      *      
      */
-    private function buildSQLWhere()
-    {
-        if ($this->where != '')
-        {
+    private function buildSQLWhere() {
+        if ($this->where != '') {
             return;
         }        
     
@@ -624,23 +560,19 @@ class unreadPosts
         $this->where .= "t.visible = 1";
         
         // Search not moved
-        if (!$this->getConfig('StatusMoved'))
-        {
+        if ($this->getConfig('StatusMoved')) {
             $this->where .= " AND t.closed NOT LIKE 'moved|%'"; 
         }
         
         // Only one fid theme
-        if ($this->fid)
-        {
+        if ($this->fid) {
             $this->where .= " AND t.fid = '{$this->fid}'";
         }
 
         $exceptions = $this->getConfig('Exceptions');
-        if (!empty($exceptions))
-        {
+        if (!empty($exceptions)) {
             // All forums?
-            if ($exceptions == '-1')
-            {
+            if ($exceptions == '-1') {
                 $this->where .= " AND 1 = 0";
                 return;    
             }
@@ -653,21 +585,17 @@ class unreadPosts
 
         // Check group permissions if we can't view threads not started by us
         $group_permissions = forum_permissions();
-        foreach ($group_permissions as $fid => $forum_permissions)
-        {
-            if ($forum_permissions['canonlyviewownthreads'] == 1)
-            {
+        foreach ($group_permissions as $fid => $forum_permissions) {
+            if ($forum_permissions['canonlyviewownthreads'] == 1) {
                 $onlyusfids[] = $fid;
             }
         }
-        if (!empty($onlyusfids))
-        {
+        if (!empty($onlyusfids)) {
             $this->where .= " AND ((t.fid IN(" . implode(',', $onlyusfids) . ") AND t.uid='{$mybb->user['uid']}') OR t.fid NOT IN(" . implode(',', $onlyusfids) . "))";
         }
         
         // Unsearchable forums
-        if (!function_exists('get_unsearchable_forums'))
-        {   
+        if (!function_exists('get_unsearchable_forums')) {   
             require_once MYBB_ROOT."inc/functions_search.php";  
         }    
              
@@ -675,15 +603,13 @@ class unreadPosts
         $permissioncache = $unsearchableforums = false;
 
         $unsearchforums = get_unsearchable_forums();
-        if ($unsearchforums)
-        {                              
+        if ($unsearchforums) {                              
             $this->where .= " AND t.fid NOT IN ($unsearchforums)";
         } 
         
         // Inactive forums
         $inactiveforums = get_inactive_forums();
-        if ($inactiveforums)
-        {
+        if ($inactiveforums) {
             $this->where .= " AND t.fid NOT IN ($inactiveforums)";
         }
     }     
@@ -692,17 +618,14 @@ class unreadPosts
      * Prepare LIMIT for search query
      *      
      */
-    private function buildSQLLimit()
-    {
-        if (!$this->getConfig('StatusCounter'))
-        {
+    private function buildSQLLimit() {
+        if (!$this->getConfig('StatusCounter')) {
             $this->limit = 1;
             return 1;        
         }
     
         $limit = (int) $this->getConfig('Limit');
-        if (!$limit || $limit > 10000)
-        {
+        if (!$limit || $limit > 10000) {
             $limit = 500;
         }
         
@@ -716,8 +639,7 @@ class unreadPosts
      * @param string $name Name of config to get
      * @return string Data config from MyBB Settings
      */
-    private function getConfig($name)
-    {
+    private function getConfig($name) {
         global $mybb;
 
         return $mybb->settings["unreadPosts{$name}"];
@@ -728,13 +650,11 @@ class unreadPosts
      * Please don't remove this code if you didn't make donate
      * It's the only way to say thanks without donate :)     
      */
-    public function pluginThanks(&$content)
-    {
+    public function pluginThanks(&$content) {
         global $session, $lukasamd_thanks;
         
-        if (!isset($lukasamd_thanks) && $session->is_spider)
-        {
-            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="https://tkacz.it">Lukasz Tkacz</a> MyBB addons.</div></body>';
+        if (!isset($lukasamd_thanks) && $session->is_spider) {
+            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="https://lukasztkacz.com">Lukasz Tkacz</a> MyBB addons.</div></body>';
             $content = str_replace('</body>', $thx, $content);
             $lukasamd_thanks = true;
         }
