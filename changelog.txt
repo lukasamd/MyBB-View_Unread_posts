@@ -1,3 +1,8 @@
+Version 1.4.1
+    * Small template fix
+
+
+
 Version 1.4.0
     * Fix header template (add li element)
     * Fix moved SQL exception
