@@ -28,11 +28,9 @@ if (!defined("IN_MYBB")) exit;
  * Plugin Installator Class
  * 
  */
-class unreadPostsInstaller
-{
+class unreadPostsInstaller {
 
-    public static function install()
-    {
+    public static function install() {
         global $db, $lang, $mybb;
         self::uninstall();
 
@@ -56,7 +54,7 @@ class unreadPostsInstaller
             'name' => 'unreadPostsExceptions',
             'title' => $db->escape_string($lang->unreadPostsExceptions),
             'description' => $db->escape_string($lang->unreadPostsExceptionsDesc),
-            'optionscode' => 'text',
+            'optionscode' => 'forumselect',
             'value' => '',
             'disporder' => $disporder++,
             'gid' => $gid
@@ -110,6 +108,18 @@ class unreadPostsInstaller
             'gid' => $gid
         );
         $db->insert_query('settings', $setting);
+        
+        $setting = array(
+            'sid' => 'NULL',
+            'name' => 'unreadPostsStatusMoved',
+            'title' => $db->escape_string($lang->unreadPostsStatusMoved),
+            'description' => $db->escape_string($lang->unreadPostsStatusMovedDesc),
+            'optionscode' => 'onoff',
+            'value' => '0',
+            'disporder' => $disporder++,
+            'gid' => $gid
+        );
+        $db->insert_query('settings', $setting);
 
 
         $setting = array(
@@ -150,18 +160,6 @@ class unreadPostsInstaller
         
         $setting = array(
             'sid' => 'NULL',
-            'name' => 'unreadPostsMarkerStyle',
-            'title' => $db->escape_string($lang->unreadPostsMarkerStyle),
-            'description' => $db->escape_string($lang->unreadPostsMarkerStyleDesc),
-            'optionscode' => 'textarea',
-            'value' => "color:red;\nfont-weight:bold;",
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-        
-        $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsThreadStartDate',
             'title' => $db->escape_string($lang->unreadPostsThreadStartDate),
             'description' => $db->escape_string($lang->unreadPostsThreadStartDateDesc),
@@ -185,27 +183,28 @@ class unreadPostsInstaller
         $db->insert_query('settings', $setting);
 
         // Add last mark field - time when user mark all forums read
-        if (!$db->field_exists("lastmark", "users"))
-        {
+        if (!$db->field_exists("lastmark", "users")) {
             $db->add_column("users", "lastmark", "INT NOT NULL DEFAULT '0'");
         }
 
         $db->update_query("users", array("lastmark" => "regdate"), '', '', true);
         $db->update_query("settings", array("value" => "365"), "name = 'threadreadcut'");
+        
+        rebuild_settings();
     }
 
-    public static function uninstall()
-    {
+    public static function uninstall() {
         global $db;
         
         $result = $db->simple_select('settinggroups', 'gid', "name = 'unreadPosts'");
         $gid = (int) $db->fetch_field($result, "gid");
         
-        if ($gid > 0)
-        {
+        if ($gid > 0) {
             $db->delete_query('settings', "gid = '{$gid}'");
         }
         $db->delete_query('settinggroups', "gid = '{$gid}'");
+        
+        rebuild_settings();
     }
 
 }

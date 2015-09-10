@@ -24,7 +24,7 @@ $l['unreadPostsGroupDesc'] = 'Settings for plugin "View Unread Posts"';
 
 
 $l['unreadPostsExceptions'] = 'Exception forums list';
-$l['unreadPostsExceptionsDesc'] = 'Forums IDs which will not be searched, comma seprated';
+$l['unreadPostsExceptionsDesc'] = 'Forums which will not be searched.';
 
 $l['unreadPostsStatusActionUnread'] = 'Change lastpost to first unread post topic links';
 $l['unreadPostsStatusActionUnreadDesc'] = 'This option replaces all the links on the forum lead to the last post (action = lastpost) for links to first unread post in the thread.';
@@ -41,6 +41,8 @@ $l['unreadPostsStatusCounterHideDesc'] = 'This option hides url for searching un
 $l['unreadPostsLimit'] = 'Results limit for counter';
 $l['unreadPostsLimitDesc'] = 'Limit query results looking for unreads posts for the counter.<br /> The recommended value is 500 or less – more than 10000 will be automatically reduced to 500.<br /> If the search finds more results, it will display information like "500 +".';
 
+$l['unreadPostsStatusMoved'] = 'Enable search "moved posts"';
+$l['unreadPostsStatusMovedDesc'] = 'If enabled, forum can slow down (not recommended on big boards).';
 
 $l['unreadPostsCounterPages'] = 'Subpages with active unread posts counter posts';
 $l['unreadPostsCounterPagesDesc'] = 'Pages-codes (THIS_SCRIPT constant), on which the unread posts counter will be active active. If not specified, the counter will be active on all pages.';

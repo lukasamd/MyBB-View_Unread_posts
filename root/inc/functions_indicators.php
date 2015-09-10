@@ -1,19 +1,18 @@
 <?php
 /**
- * MyBB 1.6
- * Copyright 2010 MyBB Group, All Rights Reserved
+ * MyBB 1.8
+ * Copyright 2014 MyBB Group, All Rights Reserved
  *
- * Website: http://mybb.com
- * License: http://mybb.com/about/license
+ * Website: http://www.mybb.com
+ * License: http://www.mybb.com/about/license
  *
- * $Id$
  */
 
 /**
  * Mark a particular thread as read for the current user.
  *
- * @param int The thread ID
- * @param int The forum ID of the thread
+ * @param int $tid The thread ID
+ * @param int $fid The forum ID of the thread
  */
 function mark_thread_read($tid, $fid, $mark_time = 0)
 {
@@ -111,14 +110,22 @@ function fetch_unread_count($fid)
     {
         $comma = '';
         $tids = '';
-		$threadsread = my_unserialize($mybb->cookies['mybb']['threadread']);
-		$forumsread = my_unserialize($mybb->cookies['mybb']['forumread']);
+		$threadsread = $forumsread = array();
+
+		if(isset($mybb->cookies['mybb']['threadread']))
+		{
+			$threadsread = my_unserialize($mybb->cookies['mybb']['threadread']);
+		}
+		if(isset($mybb->cookies['mybb']['forumread']))
+		{
+			$forumsread = my_unserialize($mybb->cookies['mybb']['forumread']);
+		}
 
 		if(!empty($threadsread))
         {
             foreach ($threadsread as $key => $value)
             {
-                $tids .= $comma . intval($key);
+                $tids .= $comma.(int)$key;
                 $comma = ',';
             }
         }
@@ -128,11 +135,11 @@ function fetch_unread_count($fid)
             $count = 0;
 
             // We've read at least some threads, are they here?
-			$query = $db->simple_select("threads", "lastpost, tid, fid", "visible=1 AND closed NOT LIKE 'moved|%' AND fid IN ($fid) AND lastpost > '{$cutoff}'{$onlyview}", array("limit" => 100));
+            $query = $db->simple_select("threads", "lastpost, tid, fid", "visible=1 AND closed NOT LIKE 'moved|%' AND fid IN ({$fid}) AND lastpost > '{$cutoff}'{$onlyview}", array("limit" => 100));
 
             while ($thread = $db->fetch_array($query))
             {
-                if ($thread['lastpost'] > intval($threadsread[$thread['tid']]) && $thread['lastpost'] > intval($forumsread[$thread['fid']]))
+                if(isset($threadsread[$thread['tid']]) && $thread['lastpost'] > (int)$threadsread[$thread['tid']] && isset($forumsread[$thread['fid']]) && $thread['lastpost'] > (int)$forumsread[$thread['fid']])
                 {
                     ++$count;
                 }
@@ -163,12 +170,7 @@ function fetch_unread_count($fid)
                     FROM " . TABLE_PREFIX . "threads t
                     LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.tid=t.tid AND tr.uid='{$mybb->user['uid']}')
                     LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.fid=t.fid AND fr.uid='{$mybb->user['uid']}')
-                    WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' 
-                        AND t.fid IN ($fid) 
-                        AND t.lastpost > COALESCE(tr.dateline,$cutoff) 
-                        AND t.lastpost > COALESCE(fr.dateline,$cutoff) 
-                        AND t.lastpost > $cutoff
-                        {$onlyview2}
+                    WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' AND t.fid IN ($fid) AND t.lastpost > COALESCE(tr.dateline,$cutoff) AND t.lastpost > COALESCE(fr.dateline,$cutoff) AND t.lastpost>$cutoff{$onlyview2}
                 ");
                 break;
             default:
@@ -177,12 +179,7 @@ function fetch_unread_count($fid)
                     FROM " . TABLE_PREFIX . "threads t
                     LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.tid=t.tid AND tr.uid='{$mybb->user['uid']}')
                     LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.fid=t.fid AND fr.uid='{$mybb->user['uid']}')
-                    WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' 
-                        AND t.fid IN ($fid) 
-                        AND t.lastpost > IFNULL(tr.dateline,$cutoff) 
-                        AND t.lastpost > IFNULL(fr.dateline,$cutoff) 
-                        AND t.lastpost > $cutoff
-                        {$onlyview2}
+                    WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' AND t.fid IN ($fid) AND t.lastpost > IFNULL(tr.dateline,$cutoff) AND t.lastpost > IFNULL(fr.dateline,$cutoff) AND t.lastpost>$cutoff{$onlyview2}
                 ");
         }
         return (int) $db->fetch_field($query, "unread_count");
@@ -383,4 +380,3 @@ function mark_all_forums_read()
 		my_unsetcookie("mybb[forumread]");
 	}
 }
-?>
