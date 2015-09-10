@@ -1,4 +1,4 @@
-###View Unread Posts for MyBB
+### View Unread Posts for MyBB
 ---
 This plugin add a "view unread posts" function for all registered users - additional search engine option, like a the same function in phpBB3. There is a lot of settings and options:
 
@@ -9,5 +9,5 @@ This plugin add a "view unread posts" function for all registered users - additi
 - Forum search mode: there is option to search only on specific forum, where user is
 
 
-###Donate
+### Donate
 This plugin add link to author website (only for web spiders). If you do not want this, do not use plugin, or make donate and contact author.
