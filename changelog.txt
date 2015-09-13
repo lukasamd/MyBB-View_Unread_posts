@@ -1,3 +1,8 @@
+Version 1.4.2
+    * Small fix in search results 
+
+
+
 Version 1.4.1
     * Small template fix
 
