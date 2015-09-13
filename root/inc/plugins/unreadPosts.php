@@ -53,7 +53,7 @@ function unreadPosts_info() {
         'website' => 'https://lukasztkacz.com',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://lukasztkacz.com',
-        'version' => '1.4.0',
+        'version' => '1.4.2',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -417,7 +417,7 @@ class unreadPosts {
 
         // Change class for xmlhttp
         if ($thread['lastpost'] > $last_read && $last_read) {
-            $thread['unreadPosts_thread'] = " thread_unread\" id=\"thread{$thread['tid']}\"";
+            $thread['unreadPosts_thread'] = " thread_unread\" id=\"thread{$thread['tid']}";
         }
 
         // Modify start date
