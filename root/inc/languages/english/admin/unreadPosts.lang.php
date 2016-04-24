@@ -59,3 +59,9 @@ $l['unreadPostsThreadStartDateDesc'] = 'Display thread start date next to thread
 $l['unreadPostsFidMode'] = 'Forum (FID) counter / search mode';
 $l['unreadPostsFidModeDesc'] = 'After activation, counter and search will display informaction only about specific forum.';
 
+$l['unreadPostsCounterRefresh'] = 'Refresh counter in background';
+$l['unreadPostsCounterRefreshDesc'] = 'Refresh unread posts counter in background using AJAX.';
+
+$l['unreadPostsCounterRefreshInterval'] = 'Refresh interval';
+$l['unreadPostsCounterRefreshIntervalDesc'] = 'Interval to refresh counter in seconds.';
+

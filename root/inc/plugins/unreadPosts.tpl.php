@@ -38,7 +38,7 @@ class unreadPostsActivator {
         self::$tpl[] = array(
             "tid" => NULL,
             "title" => 'unreadPosts_link',
-            "template" => $db->escape_string('<li><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink}</a></li>'),
+            "template" => $db->escape_string('<li id="unreadCounter"><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink}</a></li>'),
             "sid" => "-1",
             "version" => "1.0",
             "dateline" => TIME_NOW,
@@ -47,7 +47,16 @@ class unreadPostsActivator {
         self::$tpl[] = array(
             "tid" => NULL,
             "title" => 'unreadPosts_linkCounter',
-            "template" => $db->escape_string('<li><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink} {$unreadPostsCounter}</a></li>'),
+            "template" => $db->escape_string('<li id="unreadCounter"><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink} {$unreadPostsCounter}</a></li>'),
+            "sid" => "-1",
+            "version" => "1.0",
+            "dateline" => TIME_NOW,
+        );
+
+        self::$tpl[] = array(
+            "tid" => NULL,
+            "title" => 'unreadPosts_noData',
+            "template" => $db->escape_string('<li id="unreadCounter" style="display:none;"></li>'),
             "sid" => "-1",
             "version" => "1.0",
             "dateline" => TIME_NOW,
@@ -103,15 +112,6 @@ class unreadPostsActivator {
             "version" => "1.0",
             "dateline" => TIME_NOW,
         );
- 
-        self::$tpl[] = array(
-            "tid" => NULL,
-            "title" => 'unreadPosts_footerJS',
-            "template" => $db->escape_string('&raquo; {$thread[\'startdate_date\']} {$thread[\'startdate_time\']}'),
-            "sid" => "-1",
-            "version" => "1.0",
-            "dateline" => TIME_NOW,
-        ); 
     }
 
     public static function activate() {
