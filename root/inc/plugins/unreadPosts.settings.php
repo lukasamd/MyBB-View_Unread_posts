@@ -96,6 +96,30 @@ class unreadPostsInstaller {
             'gid' => $gid
         );
         $db->insert_query('settings', $setting);
+
+        $setting = array(
+            'sid' => 'NULL',
+            'name' => 'unreadPostsCounterRefresh',
+            'title' => $db->escape_string($lang->unreadPostsCounterRefresh),
+            'description' => $db->escape_string($lang->unreadPostsCounterRefreshDesc),
+            'optionscode' => 'onoff',
+            'value' => '1',
+            'disporder' => $disporder++,
+            'gid' => $gid
+        );
+        $db->insert_query('settings', $setting);
+
+        $setting = array(
+            'sid' => 'NULL',
+            'name' => 'unreadPostsCounterRefreshInterval',
+            'title' => $db->escape_string($lang->unreadPostsCounterRefreshInterval),
+            'description' => $db->escape_string($lang->unreadPostsCounterRefreshIntervalDesc),
+            'optionscode' => 'text',
+            'value' => '30',
+            'disporder' => $disporder++,
+            'gid' => $gid
+        );
+        $db->insert_query('settings', $setting);
         
         $setting = array(
             'sid' => 'NULL',

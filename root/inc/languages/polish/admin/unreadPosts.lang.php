@@ -56,3 +56,10 @@ $l['unreadPostsThreadStartDateDesc'] = 'Wyświetla datę rozpoczęcia wątku w w
 $l['unreadPostsFidMode'] = 'Tryb licznika / wyszukiwania dla działu';
 $l['unreadPostsFidModeDesc'] = 'Po aktywacji, licznik w działach będzie zliczał nieprzeczytane posty tylko z nich.';
 
+$l['unreadPostsCounterRefresh'] = 'Automatyczne odświeżanie licznika';
+$l['unreadPostsCounterRefreshDesc'] = 'Automatycznie odświeża licznik (AJAX) zgodnie z jego ustawieniami.';
+
+$l['unreadPostsCounterRefreshInterval'] = 'Czas odświeżania licznika';
+$l['unreadPostsCounterRefreshIntervalDesc'] = 'Czas w sekundach po którym licznik nieprzeczytanych postów będzie odświeżany.';
+
+

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- */ 
+ */
 
 $(document).ready(function()
 {   
@@ -39,5 +39,28 @@ $(document).ready(function()
                 element.removeClass().toggleClass(classes);
             }
         });
-    }); 
+    });
 });
+
+
+var unreadPosts = {
+
+    timeout:    false,
+    interval:   10,
+    enable:     false,
+    fid:        0,
+    hide:       false,
+
+    updateCounter: function() {
+        if (!unreadPosts.enable) {
+            return;
+        }
+
+        $.get( "xmlhttp.php?action=unreadPosts_getUnreads&fid" + unreadPosts.fid, function( data ) {
+            $("#unreadCounter").replaceWith(data);
+        });
+
+        if (unreadPosts.timeout) clearTimeout(unreadPosts.timeout);
+        unreadPosts.timeout = setTimeout('unreadPosts.updateCounter()', unreadPosts.interval * 1000);
+    },
+};
