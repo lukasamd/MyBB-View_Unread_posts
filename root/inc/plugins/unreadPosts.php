@@ -46,7 +46,7 @@ function unreadPosts_info() {
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.5',
+        'version' => '1.6',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -91,7 +91,7 @@ function unreadPosts_deactivate() {
 * 
 */
 global $templatelist;
-$templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter';
+$templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter,unreadPosts_noData';
 if (THIS_SCRIPT == 'showthread.php') {
     $templatelist .= ',unreadPosts_postbit'; 
 }

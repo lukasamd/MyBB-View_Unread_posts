@@ -56,48 +56,78 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
     }
     // END - Unread posts MOD
 
-    // Can only do "true" tracking for registered users
-    if ($mybb->settings['threadreadcut'] > 0 && $mybb->user['uid'])
-    {
-        // For registered users, store the information in the database.
-        switch ($db->type)
-        {
-            case "pgsql":
-            case "sqlite":
-                $db->replace_query("threadsread", array('tid' => $tid, 'uid' => $mybb->user['uid'], 'dateline' => TIME_NOW), array("tid", "uid"));
-                break;
-            default:
-                $db->write_query("
-                    REPLACE INTO " . TABLE_PREFIX . "threadsread (tid, uid, dateline)
-                    VALUES('$tid', '{$mybb->user['uid']}', '" . TIME_NOW . "')
-                ");
-        }
-    }
-    // Default back to cookie marking
-    else
-    {
-        my_set_array_cookie("threadread", $tid, TIME_NOW, -1);
-    }
+	// Can only do "true" tracking for registered users
+	if($mybb->settings['threadreadcut'] > 0 && $mybb->user['uid'])
+	{
+		// For registered users, store the information in the database.
+		switch($db->type)
+		{
+			case "pgsql":
+			case "sqlite":
+				$db->replace_query("threadsread", array('tid' => $tid, 'uid' => $mybb->user['uid'], 'dateline' => TIME_NOW), array("tid", "uid"));
+				break;
+			default:
+				$db->write_query("
+					REPLACE INTO ".TABLE_PREFIX."threadsread (tid, uid, dateline)
+					VALUES('$tid', '{$mybb->user['uid']}', '".TIME_NOW."')
+				");
+		}
+	}
+	// Default back to cookie marking
+	else
+	{
+		my_set_array_cookie("threadread", $tid, TIME_NOW, -1);
+	}
 
-    $unread_count = fetch_unread_count($fid);
-    if ($unread_count == 0)
-    {
-        mark_forum_read($fid);
-    }
+	$unread_count = fetch_unread_count($fid);
+	if($unread_count == 0)
+	{
+		mark_forum_read($fid);
+	}
 }
 
 /**
  * Fetches the number of unread threads for the current user in a particular forum.
  *
- * @param string The forums (CSV list)
+ * @param string $fid The forums (CSV list)
  * @return int The number of unread threads
  */
 function fetch_unread_count($fid)
 {
 	global $cache, $db, $mybb;
 
-	$onlyview = $onlyview2 = '';
-	$permissions = forum_permissions($fid);
+	$forums_all = $forums_own = array();
+	$forums = explode(',', $fid);
+	foreach($forums as $forum)
+	{
+		$permissions = forum_permissions($forum);
+		if(!empty($permissions['canonlyviewownthreads']))
+		{
+			$forums_own[] = $forum;
+		}
+		else
+		{
+			$forums_all[] = $forum;
+		}
+	}
+	if(!empty($forums_own))
+	{
+		$where = "(fid IN (".implode(',', $forums_own).") AND uid = {$mybb->user['uid']})";
+		$where2 = "(t.fid IN (".implode(',', $forums_own).") AND t.uid = {$mybb->user['uid']})";
+	}
+	if(!empty($forums_all))
+	{
+		if(isset($where))
+		{
+			$where = "({$where} OR fid IN (".implode(',', $forums_all)."))";
+			$where2 = "({$where2} OR t.fid IN (".implode(',', $forums_all)."))";
+		}
+		else
+		{
+			$where = 'fid IN ('.implode(',', $forums_all).')';
+			$where2 = 't.fid IN ('.implode(',', $forums_all).')';
+		}
+	}
 	$cutoff = TIME_NOW-$mybb->settings['threadreadcut']*60*60*24;
 
 	if(!empty($permissions['canonlyviewownthreads']))
@@ -106,10 +136,10 @@ function fetch_unread_count($fid)
 		$onlyview2 = " AND t.uid = '{$mybb->user['uid']}'";
 	}
 
-    if ($mybb->user['uid'] == 0)
-    {
-        $comma = '';
-        $tids = '';
+	if($mybb->user['uid'] == 0)
+	{
+		$comma = '';
+		$tids = '';
 		$threadsread = $forumsread = array();
 
 		if(isset($mybb->cookies['mybb']['threadread']))
@@ -122,74 +152,74 @@ function fetch_unread_count($fid)
 		}
 
 		if(!empty($threadsread))
-        {
-            foreach ($threadsread as $key => $value)
-            {
-                $tids .= $comma.(int)$key;
-                $comma = ',';
-            }
-        }
+		{
+			foreach($threadsread as $key => $value)
+			{
+				$tids .= $comma.(int)$key;
+				$comma = ',';
+			}
+		}
 
-        if (!empty($tids))
-        {
-            $count = 0;
+		if(!empty($tids))
+		{
+			$count = 0;
 
-            // We've read at least some threads, are they here?
-            $query = $db->simple_select("threads", "lastpost, tid, fid", "visible=1 AND closed NOT LIKE 'moved|%' AND fid IN ({$fid}) AND lastpost > '{$cutoff}'{$onlyview}", array("limit" => 100));
+			// We've read at least some threads, are they here?
+			$query = $db->simple_select("threads", "lastpost, tid, fid", "visible=1 AND closed NOT LIKE 'moved|%' AND {$where} AND lastpost > '{$cutoff}'", array("limit" => 100));
 
-            while ($thread = $db->fetch_array($query))
-            {
-                if(isset($threadsread[$thread['tid']]) && $thread['lastpost'] > (int)$threadsread[$thread['tid']] && isset($forumsread[$thread['fid']]) && $thread['lastpost'] > (int)$forumsread[$thread['fid']])
-                {
-                    ++$count;
-                }
-            }
+			while($thread = $db->fetch_array($query))
+			{
+				if((!isset($threadsread[$thread['tid']]) || $thread['lastpost'] > (int)$threadsread[$thread['tid']]) && (!isset($forumsread[$thread['fid']]) || $thread['lastpost'] > (int)$forumsread[$thread['fid']]))
+				{
+					++$count;
+				}
+			}
 
-            return $count;
-        }
+			return $count;
+		}
 
-        // Not read any threads?
-        return false;
-    }
-    else
-    {
+		// Not read any threads?
+		return false;
+	}
+	else
+	{
+
+	        // START - Unread posts MOD
+	        $fieldname = 'dateline';
+	        if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed())
+	        {
+	            $cutoff = $mybb->user['lastmark'];
+	        }
+	        // END - Unread posts MOD
         
-        // START - Unread posts MOD
-        $fieldname = 'dateline';
-        if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed())
-        {
-            $cutoff = $mybb->user['lastmark'];
-        }
-        // END - Unread posts MOD
-        
-        switch ($db->type)
-        {
-            case "pgsql":
-                $query = $db->query("
-                    SELECT COUNT(t.tid) AS unread_count
-                    FROM " . TABLE_PREFIX . "threads t
-                    LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.tid=t.tid AND tr.uid='{$mybb->user['uid']}')
-                    LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.fid=t.fid AND fr.uid='{$mybb->user['uid']}')
-                    WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' AND t.fid IN ($fid) AND t.lastpost > COALESCE(tr.dateline,$cutoff) AND t.lastpost > COALESCE(fr.dateline,$cutoff) AND t.lastpost>$cutoff{$onlyview2}
-                ");
-                break;
-            default:
-                $query = $db->query("
-                    SELECT COUNT(t.tid) AS unread_count
-                    FROM " . TABLE_PREFIX . "threads t
-                    LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.tid=t.tid AND tr.uid='{$mybb->user['uid']}')
-                    LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.fid=t.fid AND fr.uid='{$mybb->user['uid']}')
-                    WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' AND t.fid IN ($fid) AND t.lastpost > IFNULL(tr.dateline,$cutoff) AND t.lastpost > IFNULL(fr.dateline,$cutoff) AND t.lastpost>$cutoff{$onlyview2}
-                ");
-        }
-        return (int) $db->fetch_field($query, "unread_count");
-    }
+		switch($db->type)
+		{
+			case "pgsql":
+				$query = $db->query("
+					SELECT COUNT(t.tid) AS unread_count
+					FROM ".TABLE_PREFIX."threads t
+					LEFT JOIN ".TABLE_PREFIX."threadsread tr ON (tr.tid=t.tid AND tr.uid='{$mybb->user['uid']}')
+					LEFT JOIN ".TABLE_PREFIX."forumsread fr ON (fr.fid=t.fid AND fr.uid='{$mybb->user['uid']}')
+					WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' AND {$where2} AND t.lastpost > COALESCE(tr.dateline,$cutoff) AND t.lastpost > COALESCE(fr.dateline,$cutoff) AND t.lastpost>$cutoff
+				");
+				break;
+			default:
+				$query = $db->query("
+					SELECT COUNT(t.tid) AS unread_count
+					FROM ".TABLE_PREFIX."threads t
+					LEFT JOIN ".TABLE_PREFIX."threadsread tr ON (tr.tid=t.tid AND tr.uid='{$mybb->user['uid']}')
+					LEFT JOIN ".TABLE_PREFIX."forumsread fr ON (fr.fid=t.fid AND fr.uid='{$mybb->user['uid']}')
+					WHERE t.visible=1 AND t.closed NOT LIKE 'moved|%' AND {$where2} AND t.lastpost > IFNULL(tr.dateline,$cutoff) AND t.lastpost > IFNULL(fr.dateline,$cutoff) AND t.lastpost>$cutoff
+				");
+		}
+		return $db->fetch_field($query, "unread_count");
+	}
 }
 
 /**
  * Mark a particular forum as read.
  *
- * @param int The forum ID
+ * @param int $fid The forum ID
  */
 function mark_forum_read($fid)
 {
@@ -241,7 +271,7 @@ function mark_forum_read($fid)
 			case "pgsql":
 			case "sqlite":
 				add_shutdown(array($db, "replace_query"), array("forumsread", array('fid' => $fid, 'uid' => $mybb->user['uid'], 'dateline' => TIME_NOW), array("fid", "uid")));
-				
+
 				if(!empty($forums_to_read))
 				{
 					foreach($forums_to_read as $forum)
@@ -266,14 +296,14 @@ function mark_forum_read($fid)
 				");
 		}
         
-        // START - Unread posts MOD
-        $forums_to_read[] = $fid;
-        $fids = implode(',', $forums_to_read);
-        $db->query("DELETE TTR.* 
-            		FROM " . TABLE_PREFIX . "threadsread AS TTR
-            		INNER JOIN " . TABLE_PREFIX . "threads AS TT ON TT.tid = TTR.tid
-            		WHERE TTR.uid = '" . $mybb->user['uid'] . "' AND TT.fid IN (" . $fids . ")");
-        // END - Unread posts MOD  
+	        // START - Unread posts MOD
+	        $forums_to_read[] = $fid;
+	        $fids = implode(',', $forums_to_read);
+	        $db->query("DELETE TTR.* 
+	            		FROM " . TABLE_PREFIX . "threadsread AS TTR
+	            		INNER JOIN " . TABLE_PREFIX . "threads AS TT ON TT.tid = TTR.tid
+	            		WHERE TTR.uid = '" . $mybb->user['uid'] . "' AND TT.fid IN (" . $fids . ")");
+	        // END - Unread posts MOD  
 	}
 	// Mark in a cookie
 	else
@@ -301,18 +331,18 @@ function mark_all_forums_read()
 		{
 			// Need to loop through all forums and mark them as read
 			$forums = $cache->read('forums');
-			
+
 			$update_count = ceil(count($forums)/20);
-			
+
 			if($update_count < 15)
 			{
 				$update_count = 15;
 			}
-			
+
 			$mark_query = '';
 			$done = 0;
 			foreach(array_keys($forums) as $fid)
-			{				
+			{
 				switch($db->type)
 				{
 					case "pgsql":
@@ -327,7 +357,7 @@ function mark_all_forums_read()
 						$mark_query .= "('{$fid}', '{$mybb->user['uid']}', '".TIME_NOW."')";
 				}
 				++$done;
-				
+
 				// Only do this in loops of $update_count, save query time
 				if($done % $update_count)
 				{
@@ -350,7 +380,7 @@ function mark_all_forums_read()
 					}
 				}
 			}
-			
+
 			if($mark_query != '')
 			{
 				switch($db->type)

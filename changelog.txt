@@ -1,3 +1,9 @@
+Version 1.6
+    * Cache template
+    * Updated functions_indicators.php
+
+
+
 Version 1.5
     * Rewrite code
     * Update author data
