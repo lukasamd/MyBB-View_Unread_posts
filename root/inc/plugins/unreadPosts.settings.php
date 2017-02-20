@@ -33,179 +33,110 @@ class unreadPostsInstaller {
     public static function install() {
         global $db, $lang, $mybb;
         self::uninstall();
-
-        $result = $db->simple_select('settinggroups', 'MAX(disporder) AS max_disporder');
-        $max_disporder = $db->fetch_field($result, 'max_disporder');
-        $disporder = 1;
-
-        $settings_group = array(
-            'gid' => 'NULL',
-            'name' => 'unreadPosts',
-            'title' => $db->escape_string($lang->unreadPostsName),
+		
+		$result = $db->simple_select("settinggroups", "COUNT(*) as rows");
+		$rows = $db->fetch_field($result, "rows");	
+		$setting_group = array(
+			'name' => 'unreadPosts',
+			'title' => $db->escape_string($lang->unreadPostsName),
             'description' => $db->escape_string($lang->unreadPostsGroupDesc),
-            'disporder' => $max_disporder + 1,
-            'isdefault' => '0'
-        );
-        $db->insert_query('settinggroups', $settings_group);
-        $gid = (int) $db->insert_id();
+            'disporder' => $rows+1,
+            'isdefault' => 0
+		);		
+		$gid = $db->insert_query("settinggroups", $setting_group);
 
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsExceptions',
-            'title' => $db->escape_string($lang->unreadPostsExceptions),
-            'description' => $db->escape_string($lang->unreadPostsExceptionsDesc),
-            'optionscode' => 'forumselect',
-            'value' => '',
-            'disporder' => $disporder++,
-            'gid' => $gid
+        $setting_array = array(
+			'unreadPostsExceptions' => array(
+				'title' => $db->escape_string($lang->unreadPostsExceptions),
+				'description' => $db->escape_string($lang->unreadPostsExceptionsDesc),
+				'optionscode' => 'forumselect',
+				'value' => ''
+			),
+			'unreadPostsStatusActionUnread' => array(
+				'title' => $db->escape_string($lang->unreadPostsStatusActionUnread),
+				'description' => $db->escape_string($lang->unreadPostsStatusActionUnreadDesc),
+				'optionscode' => 'onoff',
+				'value' => 1
+			),
+			'unreadPostsStatusPostbitMark' => array(
+				'title' => $db->escape_string($lang->unreadPostsStatusPostbitMark),
+				'description' => $db->escape_string($lang->unreadPostsStatusPostbitMarkDesc),
+				'optionscode' => 'onoff',
+				'value' => 1
+			),
+			'unreadPostsStatusCounter' => array(
+				'title' => $db->escape_string($lang->unreadPostsStatusCounter),
+				'description' => $db->escape_string($lang->unreadPostsStatusCounterDesc),
+				'optionscode' => 'onoff',
+				'value' => 1
+			),
+			'unreadPostsCounterRefresh' => array(
+				'title' => $db->escape_string($lang->unreadPostsCounterRefresh),
+				'description' => $db->escape_string($lang->unreadPostsCounterRefreshDesc),
+				'optionscode' => 'onoff',
+				'value' => 1
+			),
+			'unreadPostsCounterRefreshInterval' => array(
+				'title' => $db->escape_string($lang->unreadPostsCounterRefreshInterval),
+				'description' => $db->escape_string($lang->unreadPostsCounterRefreshIntervalDesc),
+				'optionscode' => 'numeric',
+				'value' => 30
+			),
+			'unreadPostsLimit' => array(
+				'title' => $db->escape_string($lang->unreadPostsLimit),
+				'description' => $db->escape_string($lang->unreadPostsLimitDesc),
+				'optionscode' => 'numeric',
+				'value' => 500
+			),
+			'unreadPostsStatusMoved' => array(
+				'title' => $db->escape_string($lang->unreadPostsStatusMoved),
+				'description' => $db->escape_string($lang->unreadPostsStatusMovedDesc),
+				'optionscode' => 'onoff',
+				'value' => 0
+			),
+			'unreadPostsStatusCounterHide' => array(
+				'title' => $db->escape_string($lang->unreadPostsStatusCounterHide),
+				'description' => $db->escape_string($lang->unreadPostsStatusCounterHideDesc),
+				'optionscode' => 'onoff',
+				'value' => 0
+			),
+			'unreadPostsCounterPages' => array(
+				'title' => $db->escape_string($lang->unreadPostsCounterPages),
+				'description' => $db->escape_string($lang->unreadPostsCounterPagesDesc),
+				'optionscode' => 'textarea',
+				'value' => 'index.php'
+			),
+			'unreadPostsMarkAllReadLink' => array(
+				'title' => $db->escape_string($lang->unreadPostsMarkAllReadLink),
+				'description' => $db->escape_string($lang->unreadPostsMarkAllReadLinkDesc),
+				'optionscode' => 'onoff',
+				'value' => 1
+			),
+			'unreadPostsThreadStartDate' => array(
+				'title' => $db->escape_string($lang->unreadPostsThreadStartDate),
+				'description' => $db->escape_string($lang->unreadPostsThreadStartDateDesc),
+				'optionscode' => 'onoff',
+				'value' => 1
+			),
+			'unreadPostsFidMode' => array(
+				'title' => $db->escape_string($lang->unreadPostsFidMode),
+				'description' => $db->escape_string($lang->unreadPostsFidModeDesc),
+				'optionscode' => 'onoff',
+				'value' => 0
+			)
         );
-        $db->insert_query('settings', $setting);
+		
+		$disporder = 1;
+		
+		foreach($setting_array as $name => $setting)
+		{
+			$setting['name'] = $name;
+			$setting['gid'] = $gid;
+			$setting['disporder'] = $disporder++;
 
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsStatusActionUnread',
-            'title' => $db->escape_string($lang->unreadPostsStatusActionUnread),
-            'description' => $db->escape_string($lang->unreadPostsStatusActionUnreadDesc),
-            'optionscode' => 'onoff',
-            'value' => '1',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsStatusPostbitMark',
-            'title' => $db->escape_string($lang->unreadPostsStatusPostbitMark),
-            'description' => $db->escape_string($lang->unreadPostsStatusPostbitMarkDesc),
-            'optionscode' => 'onoff',
-            'value' => '1',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsStatusCounter',
-            'title' => $db->escape_string($lang->unreadPostsStatusCounter),
-            'description' => $db->escape_string($lang->unreadPostsStatusCounterDesc),
-            'optionscode' => 'onoff',
-            'value' => '1',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsCounterRefresh',
-            'title' => $db->escape_string($lang->unreadPostsCounterRefresh),
-            'description' => $db->escape_string($lang->unreadPostsCounterRefreshDesc),
-            'optionscode' => 'onoff',
-            'value' => '1',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsCounterRefreshInterval',
-            'title' => $db->escape_string($lang->unreadPostsCounterRefreshInterval),
-            'description' => $db->escape_string($lang->unreadPostsCounterRefreshIntervalDesc),
-            'optionscode' => 'text',
-            'value' => '30',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-        
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsLimit',
-            'title' => $db->escape_string($lang->unreadPostsLimit),
-            'description' => $db->escape_string($lang->unreadPostsLimitDesc),
-            'optionscode' => 'text',
-            'value' => '500',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-        
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsStatusMoved',
-            'title' => $db->escape_string($lang->unreadPostsStatusMoved),
-            'description' => $db->escape_string($lang->unreadPostsStatusMovedDesc),
-            'optionscode' => 'onoff',
-            'value' => '0',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsStatusCounterHide',
-            'title' => $db->escape_string($lang->unreadPostsStatusCounterHide),
-            'description' => $db->escape_string($lang->unreadPostsStatusCounterHideDesc),
-            'optionscode' => 'onoff',
-            'value' => '0',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsCounterPages',
-            'title' => $db->escape_string($lang->unreadPostsCounterPages),
-            'description' => $db->escape_string($lang->unreadPostsCounterPagesDesc),
-            'optionscode' => 'textarea',
-            'value' => 'index.php',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsMarkAllReadLink',
-            'title' => $db->escape_string($lang->unreadPostsMarkAllReadLink),
-            'description' => $db->escape_string($lang->unreadPostsMarkAllReadLinkDesc),
-            'optionscode' => 'onoff',
-            'value' => '1',
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-        
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsThreadStartDate',
-            'title' => $db->escape_string($lang->unreadPostsThreadStartDate),
-            'description' => $db->escape_string($lang->unreadPostsThreadStartDateDesc),
-            'optionscode' => 'onoff',
-            'value' => "1",
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-        
-        $setting = array(
-            'sid' => 'NULL',
-            'name' => 'unreadPostsFidMode',
-            'title' => $db->escape_string($lang->unreadPostsFidMode),
-            'description' => $db->escape_string($lang->unreadPostsFidModeDesc),
-            'optionscode' => 'onoff',
-            'value' => "0",
-            'disporder' => $disporder++,
-            'gid' => $gid
-        );
-        $db->insert_query('settings', $setting);
-
+			$db->insert_query('settings', $setting);
+		}
+       
         // Add last mark field - time when user mark all forums read
         if (!$db->field_exists("lastmark", "users")) {
             $db->add_column("users", "lastmark", "INT NOT NULL DEFAULT '0'");
