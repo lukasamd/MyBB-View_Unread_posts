@@ -46,7 +46,7 @@ function unreadPosts_info() {
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.6',
+        'version' => '1.7',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -103,7 +103,8 @@ if (THIS_SCRIPT == 'search.php') {
  * Plugin Class 
  * 
  */
-class unreadPosts {
+class unreadPosts
+{
     // SQL Where Statement
     private static $where = '';
     
@@ -121,7 +122,8 @@ class unreadPosts {
     
     // SQL Query Limit
     private static $limit = 0;
-    
+
+
     /**
      * Add all needed hooks
      *      
@@ -161,6 +163,7 @@ class unreadPosts {
             $plugins->add_hook('pre_output_page', ['unreadPosts', 'pluginThanks']);
         }
     }
+
 
     /**
      * Redirect to first unread post in topic
@@ -221,7 +224,8 @@ class unreadPosts {
             exit;
         }       
     }
-    
+
+
     /**
      * Action to mark thread read by xmlhttp
      * 
@@ -240,6 +244,7 @@ class unreadPosts {
             mark_thread_read($thread['tid'], $thread['fid'], TIME_NOW);
         }
     }
+
 
     /**
      * Action for ajax request for upadate counter
@@ -314,6 +319,7 @@ class unreadPosts {
         echo $content;
     }
 
+
     /**
      * Get post dateline and show indicator if enabled
      * 
@@ -361,6 +367,7 @@ class unreadPosts {
         }
     }
 
+
     /**
      * Compare last post time with thread read time and update its.
      *      
@@ -374,6 +381,7 @@ class unreadPosts {
             self::$already_marked = true;
         }
     }
+
 
     /**
      * Insert plugin read data for new reply / new thread action.
@@ -389,6 +397,7 @@ class unreadPosts {
             self::$already_marked = true;
         }
     }
+
 
     /**
      * Update user lastmark field after mark all forums read and registration.
@@ -411,6 +420,7 @@ class unreadPosts {
             $db->delete_query('forumsread', "uid = '{$mybb->user['uid']}'");
         }
     }
+
 
     /**
      * Search for threads ids with unreads posts
@@ -471,7 +481,8 @@ class unreadPosts {
         $db->insert_query("searchlog", $searcharray);
         redirect("search.php?action=results&sid={$sid}", $lang->redirect_searchresults);
     }
-    
+
+
     /**
      * Add thread start date to search results
      *      
@@ -493,6 +504,7 @@ class unreadPosts {
             eval("\$thread['startdate'] .= \"" . $templates->get("unreadPosts_threadStartDate") . "\";");
         }    
     }
+
 
     /**
      * Change links action from lastpost to unread and display link to search unreads
@@ -591,7 +603,8 @@ class unreadPosts {
             $content = str_replace('?action=unreads', "?action=unreads&fid=" . self::$fid, $content);
         }
     }
-    
+
+
     /**
      * Get actual thread read plugin data
      *      
@@ -611,7 +624,8 @@ class unreadPosts {
 
         self::$readTime = max($time_thread, $time_forum, $mybb->user['lastmark']);
     }
-    
+
+
     /**
      * Helper function to decide if unread counter is allowed on current page
      * 
@@ -637,7 +651,8 @@ class unreadPosts {
         }
         return false;
     }
-    
+
+
     /**
      * Prepare WHERE statement for unread posts search query
      *      
@@ -707,7 +722,8 @@ class unreadPosts {
             self::$where .= " AND t.fid NOT IN ($inactiveforums)";
         }
     }     
-    
+
+
     /**
      * Prepare LIMIT for search query
      *      
@@ -727,6 +743,7 @@ class unreadPosts {
         return $limit + 1;
     }
 
+
     /**
      * Helper function to get variable from config
      * 
@@ -738,7 +755,8 @@ class unreadPosts {
 
         return $mybb->settings["unreadPosts{$name}"];
     }
-    
+
+
     /**
      * Say thanks to plugin author - paste link to author website.
      * Please don't remove this code if you didn't make donate
