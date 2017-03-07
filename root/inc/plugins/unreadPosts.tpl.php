@@ -118,7 +118,7 @@ class unreadPostsActivator
         for ($i = 0; $i < sizeof(self::$tpl); $i++) {
             $db->insert_query('templates', self::$tpl[$i]);
         }
-        find_replace_templatesets('header_welcomeblock_member', '#' . preg_quote('{$lang->welcome_todaysposts}</a>') . '#', '{$lang->welcome_todaysposts}</a></li><!-- UNREADPOSTS_LINK -->');
+        find_replace_templatesets('header_welcomeblock_member_search', '#' . preg_quote('{$lang->welcome_todaysposts}</a></li>') . '#', '{$lang->welcome_todaysposts}</a></li><!-- UNREADPOSTS_LINK -->');
         find_replace_templatesets('postbit_posturl', '#' . preg_quote('<strong>') . '#', '<!-- IS_UNREAD --><strong>');
 
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<td align="right" valign="top">{$multipage}') . '#', '<!-- UNREADPOSTS_MARKALL --><td align="right" valign="top">{$multipage}');
