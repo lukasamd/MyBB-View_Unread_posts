@@ -142,7 +142,7 @@ class unreadPostsActivator
         }
 
         require_once(MYBB_ROOT . '/inc/adminfunctions_templates.php');
-        find_replace_templatesets('header_welcomeblock_member', '#' . preg_quote('<!-- UNREADPOSTS_LINK -->') . '#', '');
+        find_replace_templatesets('header_welcomeblock_member_search', '#' . preg_quote('<!-- UNREADPOSTS_LINK -->') . '#', '');
         find_replace_templatesets('postbit_posturl', '#' . preg_quote('<!-- IS_UNREAD -->') . '#', '');
 
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<!-- UNREADPOSTS_MARKALL -->') . '#', '');
