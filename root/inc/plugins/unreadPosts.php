@@ -160,7 +160,6 @@ class unreadPosts
 
             $plugins->add_hook('search_start', ['unreadPosts', 'doSearch']);
             $plugins->add_hook("search_results_thread", ['unreadPosts', 'modifySearchResultThread']);
-            $plugins->add_hook('pre_output_page', ['unreadPosts', 'pluginThanks']);
         }
     }
 
@@ -754,22 +753,6 @@ class unreadPosts
         global $mybb;
 
         return $mybb->settings["unreadPosts{$name}"];
-    }
-
-
-    /**
-     * Say thanks to plugin author - paste link to author website.
-     * Please don't remove this code if you didn't make donate
-     * It's the only way to say thanks without donate :)     
-     */
-    public static function pluginThanks(&$content) {
-        global $session, $lukasamd_thanks;
-        
-        if (!isset($lukasamd_thanks) && $session->is_spider) {
-            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="https://tkacz.pro">Lukasz Tkacz</a> MyBB addons.</div></body>';
-            $content = str_replace('</body>', $thx, $content);
-            $lukasamd_thanks = true;
-        }
     }
 
 }  

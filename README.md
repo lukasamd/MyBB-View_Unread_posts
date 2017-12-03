@@ -9,6 +9,3 @@ This plugin add a "view unread posts" function for all registered users - additi
 * Forum search mode: there is option to search only on specific forum, where user is
 * Ajax counter refresh
 
-## Donate
-
-This plugin add link to author website (only for web spiders). If you do not want this, do not use plugin, or make donate and contact author.
