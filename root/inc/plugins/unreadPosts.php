@@ -612,6 +612,10 @@ class unreadPosts
     {
         global $db, $fid, $lang, $mybb, $thread;
 
+        if (!empty(self::$readTime)) {
+        	return self::$readTime;
+		}
+
         // Load lang file to showthread
         $lang->load("unreadPosts");
 
@@ -622,6 +626,7 @@ class unreadPosts
         $time_forum = (int) $db->fetch_field($result, "dateline");
 
         self::$readTime = max($time_thread, $time_forum, $mybb->user['lastmark']);
+        return self::$readTime;
     }
 
 
