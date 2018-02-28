@@ -231,7 +231,7 @@ class unreadPosts
      */
     public static function xmlhttpMarkThread()
     {
-        global $db, $mybb, $lang;
+        global $mybb;
 
         if ($mybb->user['uid'] == 0 || $mybb->input['action'] != 'unreadPosts_markThread' || !isset($mybb->input['tid'])) {
             return;
@@ -251,7 +251,7 @@ class unreadPosts
      */
     static function xmlhttpGetUnreads()
     {
-        global $db, $mybb, $charset, $templates, $lang;
+        global $db, $mybb, $templates, $lang;
 
         if ($mybb->user['uid'] == 0 || $mybb->input['action'] != 'unreadPosts_getUnreads') {
             return;
@@ -327,7 +327,7 @@ class unreadPosts
      */
     public static function analyzePostbit(&$post)
     {
-        global $db, $lang, $mybb, $templates, $pids;
+        global $lang, $mybb, $templates, $pids;
         static $tpl_indicator;
         
         // Compatibility with guys who can't use hooks
@@ -373,7 +373,7 @@ class unreadPosts
      */
     public static function markShowthreadLinear()
     {
-        global $fid, $mybb, $tid;
+        global $fid, $tid;
 
         if (self::$lastPostTime > self::$readTime) {
             mark_thread_read($tid, $fid, self::$lastPostTime);
@@ -449,7 +449,8 @@ class unreadPosts
                 LIMIT 500";
         $result = $db->query($sql);
 
-        // Build a unread topics list 
+        // Build a unread topics list
+		$tids = [];
         while ($row = $db->fetch_array($result)) {
             $tids[] = $row['tid'];
         }
@@ -487,7 +488,7 @@ class unreadPosts
      *      
      */
     public static function modifySearchResultThread() {
-        global $folder, $last_read, $mybb, $thread, $templates;
+        global $last_read, $mybb, $thread, $templates;
 
         // Change class for xmlhttp
         if ($thread['lastpost'] > $last_read && $last_read) {
