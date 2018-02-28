@@ -28,9 +28,11 @@ if (!defined("IN_MYBB")) exit;
  * Plugin Installator Class
  * 
  */
-class unreadPostsInstaller {
+class unreadPostsInstaller
+{
 
-    public static function install() {
+    public static function install()
+    {
         global $db, $lang, $mybb;
         self::uninstall();
 
@@ -39,7 +41,6 @@ class unreadPostsInstaller {
         $disporder = 1;
 
         $settings_group = array(
-            'gid' => 'NULL',
             'name' => 'unreadPosts',
             'title' => $db->escape_string($lang->unreadPostsName),
             'description' => $db->escape_string($lang->unreadPostsGroupDesc),
@@ -50,7 +51,6 @@ class unreadPostsInstaller {
         $gid = (int) $db->insert_id();
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsExceptions',
             'title' => $db->escape_string($lang->unreadPostsExceptions),
             'description' => $db->escape_string($lang->unreadPostsExceptionsDesc),
@@ -62,7 +62,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsStatusActionUnread',
             'title' => $db->escape_string($lang->unreadPostsStatusActionUnread),
             'description' => $db->escape_string($lang->unreadPostsStatusActionUnreadDesc),
@@ -74,7 +73,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsStatusPostbitMark',
             'title' => $db->escape_string($lang->unreadPostsStatusPostbitMark),
             'description' => $db->escape_string($lang->unreadPostsStatusPostbitMarkDesc),
@@ -86,7 +84,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsStatusCounter',
             'title' => $db->escape_string($lang->unreadPostsStatusCounter),
             'description' => $db->escape_string($lang->unreadPostsStatusCounterDesc),
@@ -98,7 +95,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsCounterRefresh',
             'title' => $db->escape_string($lang->unreadPostsCounterRefresh),
             'description' => $db->escape_string($lang->unreadPostsCounterRefreshDesc),
@@ -110,7 +106,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsCounterRefreshInterval',
             'title' => $db->escape_string($lang->unreadPostsCounterRefreshInterval),
             'description' => $db->escape_string($lang->unreadPostsCounterRefreshIntervalDesc),
@@ -122,7 +117,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
         
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsLimit',
             'title' => $db->escape_string($lang->unreadPostsLimit),
             'description' => $db->escape_string($lang->unreadPostsLimitDesc),
@@ -134,7 +128,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
         
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsStatusMoved',
             'title' => $db->escape_string($lang->unreadPostsStatusMoved),
             'description' => $db->escape_string($lang->unreadPostsStatusMovedDesc),
@@ -147,7 +140,6 @@ class unreadPostsInstaller {
 
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsStatusCounterHide',
             'title' => $db->escape_string($lang->unreadPostsStatusCounterHide),
             'description' => $db->escape_string($lang->unreadPostsStatusCounterHideDesc),
@@ -159,7 +151,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsCounterPages',
             'title' => $db->escape_string($lang->unreadPostsCounterPages),
             'description' => $db->escape_string($lang->unreadPostsCounterPagesDesc),
@@ -171,7 +162,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
 
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsMarkAllReadLink',
             'title' => $db->escape_string($lang->unreadPostsMarkAllReadLink),
             'description' => $db->escape_string($lang->unreadPostsMarkAllReadLinkDesc),
@@ -183,7 +173,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
         
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsThreadStartDate',
             'title' => $db->escape_string($lang->unreadPostsThreadStartDate),
             'description' => $db->escape_string($lang->unreadPostsThreadStartDateDesc),
@@ -195,7 +184,6 @@ class unreadPostsInstaller {
         $db->insert_query('settings', $setting);
         
         $setting = array(
-            'sid' => 'NULL',
             'name' => 'unreadPostsFidMode',
             'title' => $db->escape_string($lang->unreadPostsFidMode),
             'description' => $db->escape_string($lang->unreadPostsFidModeDesc),
@@ -217,7 +205,9 @@ class unreadPostsInstaller {
         rebuild_settings();
     }
 
-    public static function uninstall() {
+
+    public static function uninstall()
+    {
         global $db;
         
         $result = $db->simple_select('settinggroups', 'gid', "name = 'unreadPosts'");

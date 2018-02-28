@@ -1,3 +1,13 @@
+Version 1.8
+    * Fix compatibility with MyBB 1.8.10
+
+
+
+Version 1.7
+    * Fix installation issues on MySQL 5.7+
+
+
+
 Version 1.6
     * Cache template
     * Updated functions_indicators.php

@@ -28,15 +28,17 @@ if (!defined("IN_MYBB")) exit;
  * Plugin Activator Class
  * 
  */
-class unreadPostsActivator {
+class unreadPostsActivator
+{
 
     private static $tpl = array();
 
-    private static function getTpl() {
+
+    private static function getTpl()
+    {
         global $db;
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_link',
             "template" => $db->escape_string('<li id="unreadCounter"><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink}</a></li>'),
             "sid" => "-1",
@@ -45,7 +47,6 @@ class unreadPostsActivator {
         );
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_linkCounter',
             "template" => $db->escape_string('<li id="unreadCounter"><a href="{$mybb->settings[\'bburl\']}/search.php?action=unreads">{$lang->unreadPostsLink} {$unreadPostsCounter}</a></li>'),
             "sid" => "-1",
@@ -54,7 +55,6 @@ class unreadPostsActivator {
         );
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_noData',
             "template" => $db->escape_string('<li id="unreadCounter" style="display:none;"></li>'),
             "sid" => "-1",
@@ -63,7 +63,6 @@ class unreadPostsActivator {
         );
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_counter',
             "template" => $db->escape_string('
 ({$numUnreads})'),
@@ -73,7 +72,6 @@ class unreadPostsActivator {
         );
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_postbit',
             "template" => $db->escape_string('
 <span class="post_unread_marker">{$lang->unreadPostsMarker}</span>'),
@@ -83,7 +81,6 @@ class unreadPostsActivator {
         );
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_markAllReadLink',
             "template" => $db->escape_string('
 <td align="left" valign="top"><a href="misc.php?action=markread{$post_code_string}" class="smalltext">{$lang->unreadPostsMarkAllRead}</a></td>'),
@@ -93,7 +90,6 @@ class unreadPostsActivator {
         );
         
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_threadStartDate',
             "template" => $db->escape_string('&raquo; {$thread[\'startdate_date\']} {$thread[\'startdate_time\']}'),
             "sid" => "-1",
@@ -102,7 +98,6 @@ class unreadPostsActivator {
         );
 
         self::$tpl[] = array(
-            "tid" => NULL,
             "title" => 'unreadPosts_threadCSSCode',
             "template" => $db->escape_string('<style>
 .post_unread_marker { color:red; font-weight:bold; }
@@ -114,14 +109,16 @@ class unreadPostsActivator {
         );
     }
 
-    public static function activate() {
+
+    public static function activate()
+    {
         global $db;
         self::deactivate();
 
         for ($i = 0; $i < sizeof(self::$tpl); $i++) {
             $db->insert_query('templates', self::$tpl[$i]);
         }
-        find_replace_templatesets('header_welcomeblock_member', '#' . preg_quote('{$lang->welcome_todaysposts}</a>') . '#', '{$lang->welcome_todaysposts}</a></li><!-- UNREADPOSTS_LINK -->');
+        find_replace_templatesets('header_welcomeblock_member_search', '#' . preg_quote('{$lang->welcome_todaysposts}</a></li>') . '#', '{$lang->welcome_todaysposts}</a></li><!-- UNREADPOSTS_LINK -->');
         find_replace_templatesets('postbit_posturl', '#' . preg_quote('<strong>') . '#', '<!-- IS_UNREAD --><strong>');
 
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<td align="right" valign="top">{$multipage}') . '#', '<!-- UNREADPOSTS_MARKALL --><td align="right" valign="top">{$multipage}');
@@ -134,7 +131,9 @@ class unreadPostsActivator {
         find_replace_templatesets("footer", '#' . preg_quote('<!-- End task image code -->') . '#', "<!-- End task image code --><!-- UNREADPOSTS_JS -->");
     }
 
-    public static function deactivate() {
+
+    public static function deactivate()
+    {
         global $db;
         self::getTpl();
 
@@ -143,7 +142,7 @@ class unreadPostsActivator {
         }
 
         require_once(MYBB_ROOT . '/inc/adminfunctions_templates.php');
-        find_replace_templatesets('header_welcomeblock_member', '#' . preg_quote('<!-- UNREADPOSTS_LINK -->') . '#', '');
+        find_replace_templatesets('header_welcomeblock_member_search', '#' . preg_quote('<!-- UNREADPOSTS_LINK -->') . '#', '');
         find_replace_templatesets('postbit_posturl', '#' . preg_quote('<!-- IS_UNREAD -->') . '#', '');
 
         find_replace_templatesets('search_results_posts', '#' . preg_quote('<!-- UNREADPOSTS_MARKALL -->') . '#', '');

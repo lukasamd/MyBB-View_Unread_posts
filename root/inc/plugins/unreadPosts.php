@@ -46,7 +46,7 @@ function unreadPosts_info() {
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.6',
+        'version' => '1.8',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -103,7 +103,8 @@ if (THIS_SCRIPT == 'search.php') {
  * Plugin Class 
  * 
  */
-class unreadPosts {
+class unreadPosts
+{
     // SQL Where Statement
     private static $where = '';
     
@@ -121,7 +122,8 @@ class unreadPosts {
     
     // SQL Query Limit
     private static $limit = 0;
-    
+
+
     /**
      * Add all needed hooks
      *      
@@ -158,9 +160,9 @@ class unreadPosts {
 
             $plugins->add_hook('search_start', ['unreadPosts', 'doSearch']);
             $plugins->add_hook("search_results_thread", ['unreadPosts', 'modifySearchResultThread']);
-            $plugins->add_hook('pre_output_page', ['unreadPosts', 'pluginThanks']);
         }
     }
+
 
     /**
      * Redirect to first unread post in topic
@@ -221,14 +223,15 @@ class unreadPosts {
             exit;
         }       
     }
-    
+
+
     /**
      * Action to mark thread read by xmlhttp
      * 
      */
     public static function xmlhttpMarkThread()
     {
-        global $db, $mybb, $lang;
+        global $mybb;
 
         if ($mybb->user['uid'] == 0 || $mybb->input['action'] != 'unreadPosts_markThread' || !isset($mybb->input['tid'])) {
             return;
@@ -241,13 +244,14 @@ class unreadPosts {
         }
     }
 
+
     /**
      * Action for ajax request for upadate counter
      *
      */
     static function xmlhttpGetUnreads()
     {
-        global $db, $mybb, $charset, $templates, $lang;
+        global $db, $mybb, $templates, $lang;
 
         if ($mybb->user['uid'] == 0 || $mybb->input['action'] != 'unreadPosts_getUnreads') {
             return;
@@ -314,6 +318,7 @@ class unreadPosts {
         echo $content;
     }
 
+
     /**
      * Get post dateline and show indicator if enabled
      * 
@@ -322,7 +327,7 @@ class unreadPosts {
      */
     public static function analyzePostbit(&$post)
     {
-        global $db, $lang, $mybb, $templates, $pids;
+        global $lang, $mybb, $templates, $pids;
         static $tpl_indicator;
         
         // Compatibility with guys who can't use hooks
@@ -361,19 +366,21 @@ class unreadPosts {
         }
     }
 
+
     /**
      * Compare last post time with thread read time and update its.
      *      
      */
     public static function markShowthreadLinear()
     {
-        global $fid, $mybb, $tid;
+        global $fid, $tid;
 
         if (self::$lastPostTime > self::$readTime) {
             mark_thread_read($tid, $fid, self::$lastPostTime);
             self::$already_marked = true;
         }
     }
+
 
     /**
      * Insert plugin read data for new reply / new thread action.
@@ -389,6 +396,7 @@ class unreadPosts {
             self::$already_marked = true;
         }
     }
+
 
     /**
      * Update user lastmark field after mark all forums read and registration.
@@ -411,6 +419,7 @@ class unreadPosts {
             $db->delete_query('forumsread', "uid = '{$mybb->user['uid']}'");
         }
     }
+
 
     /**
      * Search for threads ids with unreads posts
@@ -440,7 +449,8 @@ class unreadPosts {
                 LIMIT 500";
         $result = $db->query($sql);
 
-        // Build a unread topics list 
+        // Build a unread topics list
+		$tids = [];
         while ($row = $db->fetch_array($result)) {
             $tids[] = $row['tid'];
         }
@@ -471,13 +481,14 @@ class unreadPosts {
         $db->insert_query("searchlog", $searcharray);
         redirect("search.php?action=results&sid={$sid}", $lang->redirect_searchresults);
     }
-    
+
+
     /**
      * Add thread start date to search results
      *      
      */
     public static function modifySearchResultThread() {
-        global $folder, $last_read, $mybb, $thread, $templates;
+        global $last_read, $mybb, $thread, $templates;
 
         // Change class for xmlhttp
         if ($thread['lastpost'] > $last_read && $last_read) {
@@ -493,6 +504,7 @@ class unreadPosts {
             eval("\$thread['startdate'] .= \"" . $templates->get("unreadPosts_threadStartDate") . "\";");
         }    
     }
+
 
     /**
      * Change links action from lastpost to unread and display link to search unreads
@@ -591,7 +603,8 @@ class unreadPosts {
             $content = str_replace('?action=unreads', "?action=unreads&fid=" . self::$fid, $content);
         }
     }
-    
+
+
     /**
      * Get actual thread read plugin data
      *      
@@ -599,6 +612,10 @@ class unreadPosts {
     public static function getReadTime()
     {
         global $db, $fid, $lang, $mybb, $thread;
+
+        if (!empty(self::$readTime)) {
+        	return self::$readTime;
+		}
 
         // Load lang file to showthread
         $lang->load("unreadPosts");
@@ -610,8 +627,10 @@ class unreadPosts {
         $time_forum = (int) $db->fetch_field($result, "dateline");
 
         self::$readTime = max($time_thread, $time_forum, $mybb->user['lastmark']);
+        return self::$readTime;
     }
-    
+
+
     /**
      * Helper function to decide if unread counter is allowed on current page
      * 
@@ -637,7 +656,8 @@ class unreadPosts {
         }
         return false;
     }
-    
+
+
     /**
      * Prepare WHERE statement for unread posts search query
      *      
@@ -707,7 +727,8 @@ class unreadPosts {
             self::$where .= " AND t.fid NOT IN ($inactiveforums)";
         }
     }     
-    
+
+
     /**
      * Prepare LIMIT for search query
      *      
@@ -727,6 +748,7 @@ class unreadPosts {
         return $limit + 1;
     }
 
+
     /**
      * Helper function to get variable from config
      * 
@@ -737,21 +759,6 @@ class unreadPosts {
         global $mybb;
 
         return $mybb->settings["unreadPosts{$name}"];
-    }
-    
-    /**
-     * Say thanks to plugin author - paste link to author website.
-     * Please don't remove this code if you didn't make donate
-     * It's the only way to say thanks without donate :)     
-     */
-    public static function pluginThanks(&$content) {
-        global $session, $lukasamd_thanks;
-        
-        if (!isset($lukasamd_thanks) && $session->is_spider) {
-            $thx = '<div style="margin:auto; text-align:center;">This forum uses <a href="https://tkacz.pro">Lukasz Tkacz</a> MyBB addons.</div></body>';
-            $content = str_replace('</body>', $thx, $content);
-            $lukasamd_thanks = true;
-        }
     }
 
 }  
