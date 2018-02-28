@@ -46,7 +46,7 @@ function unreadPosts_info() {
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.8',
+        'version' => '1.9',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
