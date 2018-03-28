@@ -46,7 +46,7 @@ function unreadPosts_info() {
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.10',
+        'version' => '1.11',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -92,10 +92,10 @@ function unreadPosts_deactivate() {
 */
 global $templatelist;
 $templatelist .= ',unreadPosts_link,unreadPosts_counter,unreadPosts_linkCounter,unreadPosts_noData';
-if (THIS_SCRIPT == 'showthread.php') {
+if (defined('THIS_SCRIPT') && THIS_SCRIPT === 'showthread.php') {
     $templatelist .= ',unreadPosts_postbit'; 
 }
-if (THIS_SCRIPT == 'search.php') {
+if (defined('THIS_SCRIPT') && THIS_SCRIPT === 'search.php') {
     $templatelist .= ',unreadPosts_markAllReadLink,unreadPosts_threadStartDate'; 
 }
 
@@ -173,7 +173,7 @@ class unreadPosts
         global $db, $lang, $mybb, $thread;
 
         // Change action for guests or mode 0
-        if (!self::getConfig('StatusActionUnread') || !isset($mybb->input['tid']) || THIS_SCRIPT != 'showthread.php' || $mybb->input['action'] != 'lastpost') {
+        if (!self::getConfig('StatusActionUnread') || !isset($mybb->input['tid']) || THIS_SCRIPT !== 'showthread.php' || $mybb->input['action'] != 'lastpost') {
             return;
         }
 
@@ -331,7 +331,7 @@ class unreadPosts
         static $tpl_indicator;
         
         // Compatibility with guys who can't use hooks
-        if (THIS_SCRIPT != 'showthread.php' && isset($pids) && !self::$already_marked) {
+        if (THIS_SCRIPT !== 'showthread.php' && isset($pids) && !self::$already_marked) {
             $pids_clean = str_replace('pid IN(', '', $pids);
             $pids_clean = str_replace(')', '', $pids_clean);
             $pids_clean = str_replace("'", '', $pids_clean);
@@ -517,7 +517,7 @@ class unreadPosts
         $lang->load("unreadPosts");
         
         // Post marker class
-        if (THIS_SCRIPT == 'showthread.php' || THIS_SCRIPT == 'search.php') {
+        if (THIS_SCRIPT === 'showthread.php' || THIS_SCRIPT === 'search.php') {
             $css_code = '';
             eval("\$css_code .= \"" . $templates->get("unreadPosts_threadCSSCode") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_CSS -->', $css_code, $content);
@@ -546,7 +546,7 @@ class unreadPosts
 
         // Mark all threads read link in search results
         $mark_link = '';
-        if (self::getConfig('MarkAllReadLink') && THIS_SCRIPT == 'search.php'
+        if (self::getConfig('MarkAllReadLink') && THIS_SCRIPT === 'search.php'
                 && ($postcount > 0 || $threadcount > 0)) {
             $post_code_string = "&amp;my_post_key={$mybb->post_code}";
             eval("\$mark_link .= \"" . $templates->get("unreadPosts_markAllReadLink") . "\";");
@@ -638,7 +638,7 @@ class unreadPosts
      */
     private static function isPageCounterAllowed()
     {
-        if (THIS_SCRIPT == 'xmlhttp.php') {
+        if (THIS_SCRIPT === 'xmlhttp.php') {
             return true;
         }
 
