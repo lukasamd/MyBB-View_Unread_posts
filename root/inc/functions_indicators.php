@@ -21,21 +21,17 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
     
     // START - Unread posts MOD
     // Disable mark read if not needed
-    if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed())
-    {
+    if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed()) {
         // For idiots who can't use hooks
-        if (THIS_SCRIPT != 'newreply.php' && THIS_SCRIPT != 'newthread.php' && THIS_SCRIPT != 'showthread.php')
-        {
+        if (THIS_SCRIPT != 'newreply.php' && THIS_SCRIPT != 'newthread.php' && THIS_SCRIPT != 'showthread.php' && empty($mark_time)) {
             $mark_time = TIME_NOW;
         }
     
-        if (!$mark_time || !$mybb->user['uid'] || !$mybb->settings['threadreadcut'])
-        {
+        if (!$mark_time || !$mybb->user['uid'] || !$mybb->settings['threadreadcut']) {
             return;
         }
 
-        switch ($db->type)
-        {
+        switch ($db->type) {
             case "pgsql":
             case "sqlite":
                 $db->replace_query("threadsread", array('tid' => $tid, 'uid' => $mybb->user['uid'], 'dateline' => $mark_time), array("tid", "uid"));
@@ -48,9 +44,8 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
         }
 
         $unread_count = fetch_unread_count($fid);
-        if ($unread_count == 0)
-        {
-            mark_forum_read($fid);
+        if ($unread_count == 0) {
+            mark_forum_read($fid, $mark_time);
         }
         return;
     }
@@ -221,9 +216,13 @@ function fetch_unread_count($fid)
  *
  * @param int $fid The forum ID
  */
-function mark_forum_read($fid)
+function mark_forum_read($fid, $readTime = null)
 {
 	global $mybb, $db;
+
+	if (is_null($readTime)) {
+		$readTime = TIME_NOW;
+	}
 
 	// Can only do "true" tracking for registered users
 	if($mybb->settings['threadreadcut'] > 0 && $mybb->user['uid'])
@@ -270,13 +269,13 @@ function mark_forum_read($fid)
 		{
 			case "pgsql":
 			case "sqlite":
-				add_shutdown(array($db, "replace_query"), array("forumsread", array('fid' => $fid, 'uid' => $mybb->user['uid'], 'dateline' => TIME_NOW), array("fid", "uid")));
+				add_shutdown(array($db, "replace_query"), array("forumsread", array('fid' => $fid, 'uid' => $mybb->user['uid'], 'dateline' => $readTime), array("fid", "uid")));
 
 				if(!empty($forums_to_read))
 				{
 					foreach($forums_to_read as $forum)
 					{
-						add_shutdown(array($db, "replace_query"), array("forumsread", array('fid' => $forum, 'uid' => $mybb->user['uid'], 'dateline' => TIME_NOW), array('fid', 'uid')));
+						add_shutdown(array($db, "replace_query"), array("forumsread", array('fid' => $forum, 'uid' => $mybb->user['uid'], 'dateline' => $readTime), array('fid', 'uid')));
 					}
 				}
 				break;
@@ -286,13 +285,13 @@ function mark_forum_read($fid)
 				{
 					foreach($forums_to_read as $forum)
 					{
-						$child_sql .= ", ('{$forum}', '{$mybb->user['uid']}', '".TIME_NOW."')";
+						$child_sql .= ", ('{$forum}', '{$mybb->user['uid']}', '".$readTime."')";
 					}
 				}
 
-				$db->shutdown_query("
+				$db->query("
 					REPLACE INTO ".TABLE_PREFIX."forumsread (fid, uid, dateline)
-					VALUES('{$fid}', '{$mybb->user['uid']}', '".TIME_NOW."'){$child_sql}
+					VALUES('{$fid}', '{$mybb->user['uid']}', '".$readTime."'){$child_sql}
 				");
 		}
         
@@ -308,7 +307,7 @@ function mark_forum_read($fid)
 	// Mark in a cookie
 	else
 	{
-		my_set_array_cookie("forumread", $fid, TIME_NOW, -1);
+		my_set_array_cookie("forumread", $fid, $readTime, -1);
 	}
 }
 

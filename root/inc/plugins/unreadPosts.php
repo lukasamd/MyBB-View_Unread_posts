@@ -152,8 +152,7 @@ class unreadPosts
             $plugins->add_hook('showthread_start', ['unreadPosts', 'getReadTime']);
             $plugins->add_hook("showthread_linear", ['unreadPosts', 'markShowthreadLinear']);
 
-            $plugins->add_hook('newreply_do_newreply_end', ['unreadPosts', 'newThreadOrReplyMark']);
-            $plugins->add_hook("newthread_do_newthread_end", ['unreadPosts', 'newThreadOrReplyMark']);
+            $plugins->add_hook('datahandler_post_insert_post_end', ['unreadPosts', 'newThreadOrReplyMark']);
 
             $plugins->add_hook('global_end', ['unreadPosts', 'actionNewpost']);
             $plugins->add_hook("pre_output_page", ['unreadPosts', 'modifyOutput']);
@@ -386,15 +385,15 @@ class unreadPosts
      * Insert plugin read data for new reply / new thread action.
      *      
      */
-    public static function newThreadOrReplyMark() {
-        global $fid, $tid;
-        
-        if (isset($fid) && isset($tid))
-        {
-            self::$readTime = TIME_NOW;
-            mark_thread_read($tid, $fid, TIME_NOW);
-            self::$already_marked = true;
-        }
+    public static function newThreadOrReplyMark($data)
+    {
+        if (empty($data->pid)) return;
+
+        $post = get_post($data->pid);
+        $newTime = time();
+        self::$readTime = $newTime;
+        mark_thread_read($post['tid'], $post['fid'], $newTime);
+        self::$already_marked = true;
     }
 
 
