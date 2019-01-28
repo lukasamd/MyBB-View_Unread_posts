@@ -24,7 +24,7 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
     if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed()) {
         // For idiots who can't use hooks
         if (THIS_SCRIPT != 'newreply.php' && THIS_SCRIPT != 'newthread.php' && THIS_SCRIPT != 'showthread.php' && empty($mark_time)) {
-            $mark_time = TIME_NOW;
+            $mark_time = time();
         }
     
         if (!$mark_time || !$mybb->user['uid'] || !$mybb->settings['threadreadcut']) {
@@ -178,14 +178,11 @@ function fetch_unread_count($fid)
 	}
 	else
 	{
-
-	        // START - Unread posts MOD
-	        $fieldname = 'dateline';
-	        if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed())
-	        {
-	            $cutoff = $mybb->user['lastmark'];
-	        }
-	        // END - Unread posts MOD
+        // START - Unread posts MOD
+        if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed()) {
+            $cutoff = $mybb->user['lastmark'];
+        }
+        // END - Unread posts MOD
         
 		switch($db->type)
 		{
@@ -220,9 +217,11 @@ function mark_forum_read($fid, $readTime = null)
 {
 	global $mybb, $db;
 
+    // START - Unread posts MOD
 	if (is_null($readTime)) {
-		$readTime = TIME_NOW;
+		$readTime = time();
 	}
+    // END - Unread posts MOD
 
 	// Can only do "true" tracking for registered users
 	if($mybb->settings['threadreadcut'] > 0 && $mybb->user['uid'])

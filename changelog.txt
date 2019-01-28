@@ -1,3 +1,9 @@
+Version 1.13
+    * Add fixes for mod tools
+    * Add fixes for mark as read
+    * It's last version - mod will not updated anymore
+
+
 Version 1.12
     * Add fixes for make posts unread / counter issues
 

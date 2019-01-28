@@ -8,4 +8,3 @@ This plugin add a "view unread posts" function for all registered users - additi
 * Mark topic as read from search results: user can mark any thread as read from search results view, just click topic icon (AJAX)
 * Forum search mode: there is option to search only on specific forum, where user is
 * Ajax counter refresh
-
