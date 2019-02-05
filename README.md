@@ -1,3 +1,8 @@
+# Plugin is abandoned
+I decided to stop developling MyBB addons. You can find details here:
+https://github.com/lukasamd/MyBB-View_Unread_posts/issues/25
+
+
 # View Unread Posts for MyBB
 
 This plugin add a "view unread posts" function for all registered users - additional search engine option, like a the same function in phpBB3. There is a lot of settings and options:
