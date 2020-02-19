@@ -18,7 +18,7 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
 {
     global $mybb, $db;
 
-    
+
     // START - Unread posts MOD
     // Disable mark read if not needed
     if (function_exists("unreadPosts_is_installed") && unreadPosts_is_installed()) {
@@ -26,7 +26,7 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
         if (THIS_SCRIPT != 'newreply.php' && THIS_SCRIPT != 'newthread.php' && THIS_SCRIPT != 'showthread.php' && empty($mark_time)) {
             $mark_time = time();
         }
-    
+
         if (!$mark_time || !$mybb->user['uid'] || !$mybb->settings['threadreadcut']) {
             return;
         }
@@ -45,7 +45,7 @@ function mark_thread_read($tid, $fid, $mark_time = 0)
 
         $unread_count = fetch_unread_count($fid);
         if ($unread_count == 0) {
-            mark_forum_read($fid, $mark_time);
+            mark_forum_read($fid, null);
         }
         return;
     }
@@ -183,7 +183,7 @@ function fetch_unread_count($fid)
             $cutoff = $mybb->user['lastmark'];
         }
         // END - Unread posts MOD
-        
+
 		switch($db->type)
 		{
 			case "pgsql":
@@ -293,7 +293,7 @@ function mark_forum_read($fid, $readTime = null)
 					VALUES('{$fid}', '{$mybb->user['uid']}', '".$readTime."'){$child_sql}
 				");
 		}
-        
+
 	        // START - Unread posts MOD
 	        $forums_to_read[] = $fid;
 	        $fids = implode(',', $forums_to_read);
@@ -301,7 +301,7 @@ function mark_forum_read($fid, $readTime = null)
 	            		FROM " . TABLE_PREFIX . "threadsread AS TTR
 	            		INNER JOIN " . TABLE_PREFIX . "threads AS TT ON TT.tid = TTR.tid
 	            		WHERE TTR.uid = '" . $mybb->user['uid'] . "' AND TT.fid IN (" . $fids . ")");
-	        // END - Unread posts MOD  
+	        // END - Unread posts MOD
 	}
 	// Mark in a cookie
 	else
