@@ -481,7 +481,7 @@ class unreadPosts
             "sid" => $db->escape_string($sid),
             "uid" => $mybb->user['uid'],
             "dateline" => TIME_NOW,
-            "ipaddress" => $db->escape_string($session->ipaddress),
+            "ipaddress" => $db->escape_binary(my_inet_pron($session->ipaddress)),
             "threads" => '',
             "posts" => '',
             "resulttype" => "threads",
