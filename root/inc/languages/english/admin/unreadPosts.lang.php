@@ -19,7 +19,7 @@
  */ 
 
 $l['unreadPostsName'] = 'View Unread Posts';
-$l['unreadPostsDesc'] = 'This plugin add a "view unread posts" function for all registered users.';
+$l['unreadPostsDesc'] = 'This plugin adds a "view unread posts" function for all registered users.';
 $l['unreadPostsGroupDesc'] = 'Settings for plugin "View Unread Posts"';
 
 
