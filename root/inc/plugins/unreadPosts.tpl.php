@@ -115,7 +115,7 @@ class unreadPostsActivator
         global $db;
         self::deactivate();
 
-        for ($i = 0; $i < sizeof(self::$tpl); $i++) {
+        for ($i = 0; $i < count(self::$tpl); $i++) {
             $db->insert_query('templates', self::$tpl[$i]);
         }
         find_replace_templatesets('header_welcomeblock_member_search', '#' . preg_quote('{$lang->welcome_todaysposts}</a></li>') . '#', '{$lang->welcome_todaysposts}</a></li><!-- UNREADPOSTS_LINK -->');
@@ -135,7 +135,7 @@ class unreadPostsActivator
         global $db;
         self::getTpl();
 
-        for ($i = 0; $i < sizeof(self::$tpl); $i++) {
+        for ($i = 0; $i < count(self::$tpl); $i++) {
             $db->delete_query('templates', "title = '" . self::$tpl[$i]['title'] . "'");
         }
 

@@ -1,3 +1,12 @@
+Version 1.14
+    * Updated for modern PHP compatibility (PHP 7.4+/8.x)
+    * Fixed my_inet_pron() typo to my_inet_pton()
+    * Replaced deprecated sizeof() with count()
+    * Updated Array() syntax to [] (modern PHP)
+    * Fixed JavaScript bug: missing = in AJAX URL parameter
+    * Fixed deprecated setTimeout() with string argument
+    * Confirmed compatibility with latest MyBB 1.8.x
+
 Version 1.13
     * Add fixes for mod tools
     * Add fixes for mark as read
