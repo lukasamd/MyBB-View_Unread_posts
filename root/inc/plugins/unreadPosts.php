@@ -43,17 +43,17 @@ function unreadPosts_info()
     global $lang;
 
     $lang->load("unreadPosts");
-    return Array(
+    return [
         'name' => $lang->unreadPostsName,
         'description' => $lang->unreadPostsDesc,
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.13',
+        'version' => '1.14',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
-    );
+    ];
 }
 
 /**
@@ -469,7 +469,7 @@ class unreadPosts
         }
 
         // Decide and make a where statement
-        if (sizeof($tids) > 0) {
+        if (count($tids) > 0) {
             self::$where = 't.tid IN (' . implode(',', $tids) . ')';
         } else {
             self::$where = '1 < 0';
@@ -481,7 +481,7 @@ class unreadPosts
             "sid" => $db->escape_string($sid),
             "uid" => $mybb->user['uid'],
             "dateline" => TIME_NOW,
-            "ipaddress" => $db->escape_binary(my_inet_pron($session->ipaddress)),
+            "ipaddress" => $db->escape_binary(my_inet_pton($session->ipaddress)),
             "threads" => '',
             "posts" => '',
             "resulttype" => "threads",
@@ -657,7 +657,7 @@ class unreadPosts
 
         $allowedPages = explode("\n", self::getConfig('CounterPages'));
         $allowedPages = array_map("trim", $allowedPages);
-        for ($i = 0; $i < sizeof($allowedPages); $i++) {
+        for ($i = 0; $i < count($allowedPages); $i++) {
             if ($allowedPages[$i] == '') {
                 unset($allowedPages[$i]);
             }

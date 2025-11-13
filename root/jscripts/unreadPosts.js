@@ -56,11 +56,11 @@ var unreadPosts = {
             return;
         }
 
-        $.get( "xmlhttp.php?action=unreadPosts_getUnreads&fid" + unreadPosts.fid, function( data ) {
+        $.get( "xmlhttp.php?action=unreadPosts_getUnreads&fid=" + unreadPosts.fid, function( data ) {
             $("#unreadCounter").replaceWith(data);
         });
 
         if (unreadPosts.timeout) clearTimeout(unreadPosts.timeout);
-        unreadPosts.timeout = setTimeout('unreadPosts.updateCounter()', unreadPosts.interval * 1000);
+        unreadPosts.timeout = setTimeout(function() { unreadPosts.updateCounter(); }, unreadPosts.interval * 1000);
     },
 };
