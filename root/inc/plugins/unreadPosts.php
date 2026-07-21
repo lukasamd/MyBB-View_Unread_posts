@@ -33,6 +33,7 @@ if (!defined("IN_MYBB")) {
 $plugins->add_hook("global_start", ['unreadPosts', 'addHooks']);
 $plugins->add_hook('xmlhttp', ['unreadPosts', 'xmlhttpMarkThread']);
 $plugins->add_hook('xmlhttp', ['unreadPosts', 'xmlhttpGetUnreads']);
+$plugins->add_hook('admin_config_plugins_begin', ['unreadPosts', 'showLegacyCorePatchNotice']);
 
 /**
  * Standard MyBB info function
@@ -49,7 +50,7 @@ function unreadPosts_info()
         'website' => 'https://tkacz.pro',
         'author' => 'Lukasz Tkacz',
         'authorsite' => 'https://tkacz.pro',
-        'version' => '1.14',
+        'version' => '2.0.0',
         'guid' => '',
         'compatibility' => '18*',
         'codename' => 'view_unread_posts',
@@ -122,6 +123,11 @@ class unreadPosts
     // Thread read time
     private static $readTime = 0;
 
+    // Stored thread/forum read state before MyBB core marks the thread read.
+    private static $threadReadTime = 0;
+    private static $forumReadTime = 0;
+    private static $hadForumRead = false;
+
     // Thread last post time
     private static $lastPostTime = 0;
 
@@ -130,6 +136,23 @@ class unreadPosts
 
     // SQL Query Limit
     private static $limit = 0;
+
+    // Setting defaults used before install or during upgrades.
+    private static $defaults = [
+        'Exceptions' => '',
+        'StatusActionUnread' => '1',
+        'StatusPostbitMark' => '1',
+        'StatusCounter' => '1',
+        'CounterRefresh' => '1',
+        'CounterRefreshInterval' => '30',
+        'Limit' => '500',
+        'StatusMoved' => '0',
+        'StatusCounterHide' => '0',
+        'CounterPages' => 'index.php',
+        'MarkAllReadLink' => '1',
+        'ThreadStartDate' => '1',
+        'FidMode' => '0',
+    ];
 
 
     /**
@@ -142,9 +165,9 @@ class unreadPosts
 
         // Enable fid mode?
         if (self::getConfig('FidMode')) {
-            self::$fid = (int)$mybb->input['fid'];
-            if (!self::$fid && $mybb->input['tid']) {
-                $tid = (int)$mybb->input['tid'];
+            self::$fid = self::getInput('fid', MyBB::INPUT_INT);
+            if (!self::$fid && self::getInput('tid', MyBB::INPUT_INT)) {
+                $tid = self::getInput('tid', MyBB::INPUT_INT);
                 $result = $db->simple_select("threads", "fid", "tid='{$tid}'");
                 self::$fid = (int)$db->fetch_field($result, "fid");
             }
@@ -152,9 +175,10 @@ class unreadPosts
 
         $plugins->add_hook("member_do_register_end", ['unreadPosts', 'updateLastmark']);
         $plugins->add_hook('misc_markread_end', ['unreadPosts', 'updateLastmark']);
+        $plugins->add_hook('misc_markread_forum', ['unreadPosts', 'cleanupForumReadData']);
 
-        if ($mybb->user['uid'] > 0) {
-            $mybb->user['lastmark'] = (int)$mybb->user['lastmark'];
+        if (self::getUserValue('uid') > 0) {
+            $mybb->user['lastmark'] = self::getUserValue('lastmark');
 
             $plugins->add_hook("postbit", ['unreadPosts', 'analyzePostbit']);
             $plugins->add_hook('showthread_start', ['unreadPosts', 'getReadTime']);
@@ -179,13 +203,19 @@ class unreadPosts
     {
         global $db, $lang, $mybb, $thread;
 
+        $action = self::getInput('action');
+        $tid = self::getInput('tid', MyBB::INPUT_INT);
+
         // Change action for guests or mode 0
-        if (!self::getConfig('StatusActionUnread') || !isset($mybb->input['tid']) || THIS_SCRIPT !== 'showthread.php' || $mybb->input['action'] != 'lastpost') {
+        if (!self::getConfig('StatusActionUnread') || !$tid || THIS_SCRIPT !== 'showthread.php' || $action !== 'lastpost') {
             return;
         }
 
         // Get thread data
-        $thread = get_thread($mybb->input['tid']);
+        $thread = get_thread($tid);
+        if (empty($thread['tid'])) {
+            error($lang->error_invalidthread);
+        }
 
         // Visible for moderators
         $visibleonly = "AND visible='1'";
@@ -216,15 +246,17 @@ class unreadPosts
             "tid='{$thread['tid']}' AND dateline > '" . self::$readTime . "' {$visibleonly}", $options);
         $newpost = $db->fetch_array($query);
 
-        if ($newpost['pid']) {
+        if (!empty($newpost['pid'])) {
             $highlight = '';
-            if ($mybb->input['highlight']) {
+            $highlightInput = self::getInput('highlight');
+            if ($highlightInput !== '') {
                 $string = "&";
-                if ($mybb->settings['seourls'] == "yes" || ($mybb->settings['seourls'] == "auto" && $_SERVER['SEO_SUPPORT'] == 1)) {
+                $seoSupport = isset($_SERVER['SEO_SUPPORT']) ? (int)$_SERVER['SEO_SUPPORT'] : 0;
+                if ($mybb->settings['seourls'] == "yes" || ($mybb->settings['seourls'] == "auto" && $seoSupport == 1)) {
                     $string = "?";
                 }
 
-                $highlight = $string . "highlight=" . $mybb->input['highlight'];
+                $highlight = $string . "highlight=" . urlencode($highlightInput);
             }
 
             header("Location: " . htmlspecialchars_decode(get_post_link($newpost['pid'],
@@ -242,14 +274,17 @@ class unreadPosts
     {
         global $mybb;
 
-        if ($mybb->user['uid'] == 0 || $mybb->input['action'] != 'unreadPosts_markThread' || !isset($mybb->input['tid'])) {
+        if (self::getUserValue('uid') == 0 || self::getInput('action') !== 'unreadPosts_markThread' || self::getInput('tid', MyBB::INPUT_INT) == 0) {
             return;
         }
 
-        $thread = get_thread($mybb->input['tid']);
+        if ($mybb->request_method !== 'post' || verify_post_check(self::getInput('my_post_key'), true) !== true) {
+            return;
+        }
+
+        $thread = get_thread(self::getInput('tid', MyBB::INPUT_INT));
         if ($thread) {
-            require_once MYBB_ROOT . "inc/functions_indicators.php";
-            mark_thread_read($thread['tid'], $thread['fid'], time());
+            self::markThreadRead($thread['tid'], $thread['fid'], time(), true);
         }
     }
 
@@ -258,11 +293,11 @@ class unreadPosts
      * Action for ajax request for upadate counter
      *
      */
-    static function xmlhttpGetUnreads()
+    public static function xmlhttpGetUnreads()
     {
         global $db, $mybb, $templates, $lang;
 
-        if ($mybb->user['uid'] == 0 || $mybb->input['action'] != 'unreadPosts_getUnreads') {
+        if (self::getUserValue('uid') == 0 || self::getInput('action') !== 'unreadPosts_getUnreads') {
             return;
         }
 
@@ -272,7 +307,7 @@ class unreadPosts
         }
 
         $lang->load("unreadPosts");
-        self::$fid = (int)$mybb->input['fid'];
+        self::$fid = self::getInput('fid', MyBB::INPUT_INT);
 
         // Prepare sql statements
         self::buildSQLWhere();
@@ -281,13 +316,11 @@ class unreadPosts
         $sql = "SELECT 1
                 FROM " . TABLE_PREFIX . "posts p
                 INNER JOIN " . TABLE_PREFIX . "threads t ON (p.tid = t.tid)
-                LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = {$mybb->user['uid']} AND t.tid = tr.tid) 
-                LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.uid = {$mybb->user['uid']} AND t.fid = fr.fid) 
+                LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = " . self::getUserValue('uid') . " AND t.tid = tr.tid)
+                LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.uid = " . self::getUserValue('uid') . " AND t.fid = fr.fid)
                 WHERE p.visible = 1 
                   AND " . self::$where . "
-                  AND p.dateline > IFNULL(tr.dateline,{$mybb->user['lastmark']}) 
-                  AND p.dateline > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
-                  AND p.dateline > {$mybb->user['lastmark']}
+                  AND " . self::getUnreadDatelineWhere('p.dateline') . "
                 LIMIT " . self::buildSQLLimit();
         $result = $db->query($sql);
         $numUnreads = (int)$db->num_rows($result);
@@ -299,6 +332,7 @@ class unreadPosts
 
         header("Content-type: text/html; charset=UTF-8");
         $content = '';
+        $unreadPostsCounter = '';
 
         // Hide link
         if (self::getConfig('StatusCounterHide') && $numUnreads == 0) {
@@ -315,7 +349,7 @@ class unreadPosts
         }
 
         // Link with counter
-        eval("\$unreadPostsCounter .= \"" . $templates->get("unreadPosts_counter") . "\";");
+        eval("\$unreadPostsCounter = \"" . $templates->get("unreadPosts_counter") . "\";");
         if ($numUnreads > 0 || self::getConfig('StatusCounterHide') == 0) {
             eval("\$content = \"" . $templates->get("unreadPosts_linkCounter") . "\";");
         }
@@ -349,7 +383,7 @@ class unreadPosts
             $pid = max($pids_clean);
 
             if ($post_row = get_post($pid)) {
-                mark_thread_read($post_row['tid'], $post_row['fid'], $post_row['dateline']);
+                self::markThreadRead($post_row['tid'], $post_row['fid'], $post_row['dateline']);
                 self::$already_marked = true;
             }
         }
@@ -382,11 +416,15 @@ class unreadPosts
      */
     public static function markShowthreadLinear()
     {
-        global $fid, $tid;
+        global $fid, $thread, $tid;
 
         if (self::$lastPostTime > self::$readTime) {
-            mark_thread_read($tid, $fid, self::$lastPostTime);
+            self::markThreadRead($tid, $fid, self::$lastPostTime);
             self::$already_marked = true;
+        }
+
+        if (!empty($thread['lastpost']) && self::$lastPostTime > 0 && (int)$thread['lastpost'] > self::$lastPostTime) {
+            add_shutdown(['unreadPosts', 'restoreForumReadTime'], [$fid]);
         }
     }
 
@@ -400,12 +438,14 @@ class unreadPosts
         if (empty($data->pid)) {
             return;
         }
-        require_once MYBB_ROOT . "inc/functions_indicators.php";
-
         $post = get_post($data->pid);
+        if (empty($post['tid']) || empty($post['fid'])) {
+            return;
+        }
+
         $newTime = time();
         self::$readTime = $newTime;
-        mark_thread_read($post['tid'], $post['fid'], $newTime);
+        self::markThreadRead($post['tid'], $post['fid'], $newTime, true);
         self::$already_marked = true;
     }
 
@@ -425,12 +465,34 @@ class unreadPosts
             $db->update_query("users", array('lastmark' => $time), "uid = '{$user_info['uid']}'");
         } // For already logged in
         else {
-            $db->update_query("users", array('lastmark' => $time), "uid = '{$mybb->user['uid']}'");
+            $uid = self::getUserValue('uid');
+            $db->update_query("users", array('lastmark' => $time), "uid = '{$uid}'");
 
             // Delete old read data
-            $db->delete_query('threadsread', "uid = '{$mybb->user['uid']}'");
-            $db->delete_query('forumsread', "uid = '{$mybb->user['uid']}'");
+            $db->delete_query('threadsread', "uid = '{$uid}'");
+            $db->delete_query('forumsread', "uid = '{$uid}'");
         }
+    }
+
+
+    /**
+     * Delete redundant per-thread read data after a forum is marked read.
+     *
+     */
+    public static function cleanupForumReadData()
+    {
+        global $db, $mybb;
+
+        $fid = self::getInput('fid', MyBB::INPUT_INT);
+        $uid = self::getUserValue('uid');
+        if (!$fid || !$uid) {
+            return;
+        }
+
+        $db->delete_query(
+            'threadsread',
+            "uid = '{$uid}' AND tid IN (SELECT tid FROM " . TABLE_PREFIX . "threads WHERE fid = '{$fid}')"
+        );
     }
 
 
@@ -442,7 +504,7 @@ class unreadPosts
     {
         global $db, $lang, $mybb, $plugins, $session;
 
-        if (!isset($mybb->input['action']) || $mybb->input['action'] != 'unreads') {
+        if (self::getInput('action') !== 'unreads') {
             return;
         }
 
@@ -452,12 +514,10 @@ class unreadPosts
         // Make a query to search topics with unread posts
         $sql = "SELECT t.tid
                 FROM " . TABLE_PREFIX . "threads t
-                LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = {$mybb->user['uid']} AND t.tid = tr.tid) 
-                LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.uid = {$mybb->user['uid']} AND t.fid = fr.fid) 
+                LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = " . self::getUserValue('uid') . " AND t.tid = tr.tid)
+                LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.uid = " . self::getUserValue('uid') . " AND t.fid = fr.fid)
                 WHERE " . self::$where . "
-                    AND t.lastpost > IFNULL(tr.dateline,{$mybb->user['lastmark']}) 
-                    AND t.lastpost > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
-                    AND t.lastpost > {$mybb->user['lastmark']}
+                    AND " . self::getUnreadDatelineWhere('t.lastpost') . "
                 ORDER BY t.dateline DESC
                 LIMIT 500";
         $result = $db->query($sql);
@@ -479,9 +539,9 @@ class unreadPosts
         $sid = md5(uniqid(microtime(), 1));
         $searcharray = array(
             "sid" => $db->escape_string($sid),
-            "uid" => $mybb->user['uid'],
+            "uid" => self::getUserValue('uid'),
             "dateline" => TIME_NOW,
-            "ipaddress" => $db->escape_binary(my_inet_pton($session->ipaddress)),
+            "ipaddress" => self::getPackedIpAddress(),
             "threads" => '',
             "posts" => '',
             "resulttype" => "threads",
@@ -506,6 +566,9 @@ class unreadPosts
         // Change class for xmlhttp
         if ($thread['lastpost'] > $last_read && $last_read) {
             $thread['unreadPosts_thread'] = " thread_unread\" id=\"thread{$thread['tid']}";
+        }
+        else {
+            $thread['unreadPosts_thread'] = '';
         }
 
         // Modify start date
@@ -546,6 +609,9 @@ class unreadPosts
 
         // XMLHTTP actions
         $code = "\n\r<script src=\"jscripts/unreadPosts.js\"></script>\n\r";
+        $code .= "<script>\n\r";
+        $code .= "unreadPosts.postKey = '" . addslashes($mybb->post_code) . "';\n\r";
+        $code .= "</script>\n\r";
         if ($enable_ajax) {
             $code .= "<script>\n\r";
             $code .= "unreadPosts.interval = " . self::getConfig("CounterRefreshInterval") . ";\n\r";
@@ -559,7 +625,7 @@ class unreadPosts
         // Mark all threads read link in search results
         $mark_link = '';
         if (self::getConfig('MarkAllReadLink') && THIS_SCRIPT === 'search.php'
-            && ($postcount > 0 || $threadcount > 0)) {
+            && ((int)$postcount > 0 || (int)$threadcount > 0)) {
             $post_code_string = "&amp;my_post_key={$mybb->post_code}";
             eval("\$mark_link .= \"" . $templates->get("unreadPosts_markAllReadLink") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_MARKALL -->', $mark_link, $content);
@@ -572,17 +638,16 @@ class unreadPosts
         $sql = "SELECT 1
                 FROM " . TABLE_PREFIX . "posts p
                 INNER JOIN " . TABLE_PREFIX . "threads t ON (p.tid = t.tid)
-                LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = {$mybb->user['uid']} AND t.tid = tr.tid) 
-                LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.uid = {$mybb->user['uid']} AND t.fid = fr.fid) 
+                LEFT JOIN " . TABLE_PREFIX . "threadsread tr ON (tr.uid = " . self::getUserValue('uid') . " AND t.tid = tr.tid)
+                LEFT JOIN " . TABLE_PREFIX . "forumsread fr ON (fr.uid = " . self::getUserValue('uid') . " AND t.fid = fr.fid)
                 WHERE p.visible = 1 
                   AND " . self::$where . "
-                  AND p.dateline > IFNULL(tr.dateline,{$mybb->user['lastmark']}) 
-                  AND p.dateline > IFNULL(fr.dateline,{$mybb->user['lastmark']}) 
-                  AND p.dateline > {$mybb->user['lastmark']}
+                  AND " . self::getUnreadDatelineWhere('p.dateline') . "
                 LIMIT " . self::buildSQLLimit();
         $result = $db->query($sql);
         $numUnreads = (int)$db->num_rows($result);
         $unreadPosts = '';
+        $unreadPostsCounter = '';
 
         // Change counter
         if ($numUnreads > self::$limit) {
@@ -605,7 +670,7 @@ class unreadPosts
         }
 
         // Link with counter
-        eval("\$unreadPostsCounter .= \"" . $templates->get("unreadPosts_counter") . "\";");
+        eval("\$unreadPostsCounter = \"" . $templates->get("unreadPosts_counter") . "\";");
         if ($numUnreads > 0 || self::getConfig('StatusCounterHide') == 0) {
             eval("\$unreadPosts .= \"" . $templates->get("unreadPosts_linkCounter") . "\";");
             $content = str_replace('<!-- UNREADPOSTS_LINK -->', $unreadPosts, $content);
@@ -633,13 +698,16 @@ class unreadPosts
         $lang->load("unreadPosts");
 
         $result = $db->simple_select('threadsread', 'dateline',
-            "uid='{$mybb->user['uid']}' AND tid='{$thread['tid']}'");
-        $time_thread = (int)$db->fetch_field($result, "dateline");
+            "uid='" . self::getUserValue('uid') . "' AND tid='{$thread['tid']}'");
+        $row = $db->fetch_array($result);
+        self::$threadReadTime = empty($row['dateline']) ? 0 : (int)$row['dateline'];
 
-        $result = $db->simple_select('forumsread', 'dateline', "fid='{$fid}' AND uid='{$mybb->user['uid']}'");
-        $time_forum = (int)$db->fetch_field($result, "dateline");
+        $result = $db->simple_select('forumsread', 'dateline', "fid='{$fid}' AND uid='" . self::getUserValue('uid') . "'");
+        $row = $db->fetch_array($result);
+        self::$hadForumRead = !empty($row);
+        self::$forumReadTime = empty($row['dateline']) ? 0 : (int)$row['dateline'];
 
-        self::$readTime = max($time_thread, $time_forum, $mybb->user['lastmark']);
+        self::$readTime = max(self::$threadReadTime, self::$forumReadTime, self::getUserValue('lastmark'));
         return self::$readTime;
     }
 
@@ -658,11 +726,10 @@ class unreadPosts
         $allowedPages = explode("\n", self::getConfig('CounterPages'));
         $allowedPages = array_map("trim", $allowedPages);
         for ($i = 0; $i < count($allowedPages); $i++) {
-            if ($allowedPages[$i] == '') {
+            if ($allowedPages[$i] === '') {
                 unset($allowedPages[$i]);
             }
         }
-        shuffle($allowedPages);
 
         if (empty($allowedPages) || in_array(THIS_SCRIPT, $allowedPages)) {
             return true;
@@ -693,7 +760,7 @@ class unreadPosts
 
         // Only one fid theme
         if (self::$fid) {
-            self::$where .= " AND t.fid = '" . self::$fid . "'";
+            self::$where .= " AND t.fid = '" . (int)self::$fid . "'";
         }
 
         $exceptions = self::getConfig('Exceptions');
@@ -704,7 +771,10 @@ class unreadPosts
                 return;
             }
 
-            self::$where .= " AND t.fid NOT IN (" . $exceptions . ")";
+            $exceptions = implode(',', array_filter(array_map('intval', explode(',', $exceptions))));
+            if ($exceptions !== '') {
+                self::$where .= " AND t.fid NOT IN (" . $exceptions . ")";
+            }
         }
 
         // Permissions
@@ -713,13 +783,13 @@ class unreadPosts
         // Check group permissions if we can't view threads not started by us
         $group_permissions = forum_permissions();
         foreach ($group_permissions as $fid => $forum_permissions) {
-            if ($forum_permissions['canonlyviewownthreads'] == 1) {
-                $onlyusfids[] = $fid;
+            if (!empty($forum_permissions['canonlyviewownthreads'])) {
+                $onlyusfids[] = (int)$fid;
             }
         }
         if (!empty($onlyusfids)) {
             self::$where .= " AND ((t.fid IN(" . implode(',',
-                    $onlyusfids) . ") AND t.uid='{$mybb->user['uid']}') OR t.fid NOT IN(" . implode(',',
+                    $onlyusfids) . ") AND t.uid='" . self::getUserValue('uid') . "') OR t.fid NOT IN(" . implode(',',
                     $onlyusfids) . "))";
         }
 
@@ -775,7 +845,170 @@ class unreadPosts
     {
         global $mybb;
 
-        return $mybb->settings["unreadPosts{$name}"];
+        $setting = "unreadPosts{$name}";
+        if (isset($mybb->settings[$setting])) {
+            return $mybb->settings[$setting];
+        }
+
+        return isset(self::$defaults[$name]) ? self::$defaults[$name] : '';
+    }
+
+
+    /**
+     * Show ACP notice when an old modified MyBB core indicators file is detected.
+     *
+     */
+    public static function showLegacyCorePatchNotice()
+    {
+        global $lang;
+
+        $indicatorsFile = MYBB_ROOT . 'inc/functions_indicators.php';
+        if (is_readable($indicatorsFile) && strpos((string)file_get_contents($indicatorsFile), 'Unread posts MOD') !== false) {
+            $lang->load("unreadPosts");
+            flash_message($lang->unreadPostsLegacyCorePatchWarning, 'error');
+        }
+    }
+
+
+    /**
+     * Store read state without relying on a modified MyBB core function signature.
+     *
+     */
+    private static function markThreadRead($tid, $fid, $markTime = 0, $markForumWhenClear = false)
+    {
+        global $db, $mybb;
+
+        $tid = (int)$tid;
+        $fid = (int)$fid;
+        $uid = self::getUserValue('uid');
+        $markTime = (int)$markTime;
+
+        if (!$tid || !$fid || !$uid || !$markTime || empty($mybb->settings['threadreadcut'])) {
+            return;
+        }
+
+        switch ($db->type) {
+            case "pgsql":
+            case "sqlite":
+                $db->replace_query("threadsread", ['tid' => $tid, 'uid' => $uid, 'dateline' => $markTime], ["tid", "uid"]);
+                break;
+            default:
+                $db->write_query("
+                    REPLACE INTO " . TABLE_PREFIX . "threadsread (tid, uid, dateline)
+                    VALUES('{$tid}', '{$uid}', '{$markTime}')
+                ");
+        }
+
+        if ($markForumWhenClear) {
+            require_once MYBB_ROOT . "inc/functions_indicators.php";
+            if (fetch_unread_count($fid) == 0) {
+                mark_forum_read($fid);
+            }
+        }
+    }
+
+
+    /**
+     * Revert an over-eager forum read timestamp after viewing only part of a thread.
+     *
+     */
+    public static function restoreForumReadTime($fid)
+    {
+        global $db;
+
+        $fid = (int)$fid;
+        $uid = self::getUserValue('uid');
+        if (!$fid || !$uid) {
+            return;
+        }
+
+        if (self::$hadForumRead && self::$forumReadTime > 0) {
+            switch ($db->type) {
+                case "pgsql":
+                case "sqlite":
+                    $db->replace_query("forumsread", ['fid' => $fid, 'uid' => $uid, 'dateline' => self::$forumReadTime], ["fid", "uid"]);
+                    break;
+                default:
+                    $db->write_query("
+                        REPLACE INTO " . TABLE_PREFIX . "forumsread (fid, uid, dateline)
+                        VALUES('{$fid}', '{$uid}', '" . self::$forumReadTime . "')
+                    ");
+            }
+        }
+        else {
+            $db->delete_query('forumsread', "fid = '{$fid}' AND uid = '{$uid}'");
+        }
+    }
+
+
+    /**
+     * Build DB-specific unread timestamp conditions.
+     *
+     */
+    private static function getUnreadDatelineWhere($datelineExpression)
+    {
+        $lastmark = self::getUserValue('lastmark');
+
+        return "{$datelineExpression} > " . self::ifNull('tr.dateline', $lastmark) . "
+                  AND {$datelineExpression} > " . self::ifNull('fr.dateline', $lastmark) . "
+                  AND {$datelineExpression} > {$lastmark}";
+    }
+
+
+    /**
+     * DB-specific null fallback expression.
+     *
+     */
+    private static function ifNull($expression, $fallback)
+    {
+        global $db;
+
+        $fallback = (int)$fallback;
+        if ($db->type === 'pgsql' || $db->type === 'sqlite') {
+            return "COALESCE({$expression},{$fallback})";
+        }
+
+        return "IFNULL({$expression},{$fallback})";
+    }
+
+
+    /**
+     * Use MyBB's packed session IP when available.
+     *
+     */
+    private static function getPackedIpAddress()
+    {
+        global $db, $session;
+
+        if (!empty($session->packedip)) {
+            return $db->escape_binary($session->packedip);
+        }
+
+        return $db->escape_binary(my_inet_pton($session->ipaddress));
+    }
+
+
+    /**
+     * Read request input with MyBB defaults.
+     *
+     */
+    private static function getInput($name, $type = MyBB::INPUT_STRING)
+    {
+        global $mybb;
+
+        return $mybb->get_input($name, $type);
+    }
+
+
+    /**
+     * Read current user fields without PHP 8 undefined-index warnings.
+     *
+     */
+    private static function getUserValue($name, $default = 0)
+    {
+        global $mybb;
+
+        return isset($mybb->user[$name]) ? (int)$mybb->user[$name] : (int)$default;
     }
 
 }  

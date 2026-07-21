@@ -18,25 +18,27 @@
  */
 
 $(document).ready(function()
-{   
-    $(".thread_unread").on('click', function() {
-    
+{
+    $(document).on('click', '.thread_unread', function() {
         var element = jQuery(this);
-    
-        var tid = $(this).attr("id");
-        tid = tid.replace('thread', ''); 
-        var classes = $(this).attr("class").replace("new", "");
+        var tid = element.attr("id");
+
+        if (!tid) {
+            return;
+        }
+
+        tid = tid.replace('thread', '');
 
         $.ajax({
             type: "POST",
             url: "xmlhttp.php",
-            data: (
-            {
-                tid : tid,
-                action : 'unreadPosts_markThread',
-            }),
+            data: {
+                tid: tid,
+                action: 'unreadPosts_markThread',
+                my_post_key: unreadPosts.postKey
+            },
             success: function() {
-                element.removeClass().toggleClass(classes);
+                element.removeClass('thread_unread new');
             }
         });
     });
@@ -50,17 +52,20 @@ var unreadPosts = {
     enable:     false,
     fid:        0,
     hide:       false,
+    postKey:    '',
 
     updateCounter: function() {
         if (!unreadPosts.enable) {
             return;
         }
 
-        $.get( "xmlhttp.php?action=unreadPosts_getUnreads&fid=" + unreadPosts.fid, function( data ) {
+        $.get("xmlhttp.php?action=unreadPosts_getUnreads&fid=" + unreadPosts.fid, function(data) {
             $("#unreadCounter").replaceWith(data);
         });
 
-        if (unreadPosts.timeout) clearTimeout(unreadPosts.timeout);
+        if (unreadPosts.timeout) {
+            clearTimeout(unreadPosts.timeout);
+        }
         unreadPosts.timeout = setTimeout(function() { unreadPosts.updateCounter(); }, unreadPosts.interval * 1000);
-    },
+    }
 };

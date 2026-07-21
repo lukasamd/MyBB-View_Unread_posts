@@ -33,3 +33,9 @@ INSTALLATION:
 2. Go to ACP -> Plugins and activate "View Unread Posts" plugin
 
 3. Go to ACP -> Settings -> "View Unread Posts" and configure plugin
+
+UPGRADE FROM 1.x:
+
+Version 2.x does not replace MyBB core files. If an older plugin package replaced
+inc/functions_indicators.php, restore the original file from your MyBB release
+before using this version.

@@ -1,3 +1,11 @@
+Version 2.0.0
+    * Remove the requirement to replace MyBB core inc/functions_indicators.php
+    * Fix PHP 8.2 warnings from missing action/fid input and uninitialized template variables
+    * Harden AJAX mark-thread-read with POST and my_post_key validation
+    * Use MyBB packed session IP data when writing unread search logs
+    * Add DB-specific unread timestamp conditions for MySQL, PostgreSQL, and SQLite
+    * Add Admin CP warning when an old modified functions_indicators.php file is detected
+
 Version 1.14
     * Updated for modern PHP compatibility (PHP 7.4+/8.x)
     * Fixed my_inet_pron() typo to my_inet_pton()

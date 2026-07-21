@@ -65,3 +65,4 @@ $l['unreadPostsCounterRefreshDesc'] = 'Refresh unread posts counter in backgroun
 $l['unreadPostsCounterRefreshInterval'] = 'Refresh interval';
 $l['unreadPostsCounterRefreshIntervalDesc'] = 'Interval to refresh counter in seconds.';
 
+$l['unreadPostsLegacyCorePatchWarning'] = 'View Unread Posts no longer requires replacing inc/functions_indicators.php. Restore the original MyBB file before using this plugin version.';

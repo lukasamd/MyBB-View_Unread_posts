@@ -33,3 +33,9 @@ INSTALACJA:
 2. Wejdź do Panelu Administracyjnego -> Pluginy i zainstaluj "Nieprzeczytane posty"
 
 3. Wejdź do Panelu Administracyjnego -> Ustawienia -> "Nieprzeczytane posty" i skonfiguruj plugin
+
+AKTUALIZACJA Z 1.x:
+
+Wersja 2.x nie podmienia plików rdzenia MyBB. Jeżeli starsza paczka dodatku
+podmieniła inc/functions_indicators.php, przywróć oryginalny plik z używanej
+wersji MyBB przed użyciem tej wersji dodatku.

@@ -62,4 +62,4 @@ $l['unreadPostsCounterRefreshDesc'] = 'Automatycznie odświeża licznik (AJAX) z
 $l['unreadPostsCounterRefreshInterval'] = 'Czas odświeżania licznika';
 $l['unreadPostsCounterRefreshIntervalDesc'] = 'Czas w sekundach po którym licznik nieprzeczytanych postów będzie odświeżany.';
 
-
+$l['unreadPostsLegacyCorePatchWarning'] = 'View Unread Posts nie wymaga już podmiany inc/functions_indicators.php. Przywróć oryginalny plik MyBB przed użyciem tej wersji dodatku.';
